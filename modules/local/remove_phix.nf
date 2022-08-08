@@ -1,8 +1,8 @@
 process REMOVE_PHIX {
 
-    publishDir "${params.outpath}",
+    publishDir "${params.outpath}/trim_reads",
         mode: "${params.publish_dir_mode}",
-        pattern: "*.fsq"
+        pattern: "*.tsv"
     publishDir "${params.process_log_dir}",
         mode: "${params.publish_dir_mode}",
         pattern: ".command.*",

@@ -1,6 +1,6 @@
 process EXTRACT_SINGLETONS {
 
-    publishDir "${params.outpath}",
+    publishDir "${params.outpath}/trim_reads",
         mode: "${params.publish_dir_mode}",
         pattern: "*"
     publishDir "${params.process_log_dir}",

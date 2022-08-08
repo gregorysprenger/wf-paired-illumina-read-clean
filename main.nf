@@ -117,6 +117,16 @@ include { REMOVE_PHIX } from "./modules/local/remove_phix.nf"
 include { RUN_TRIMMOMATIC } from "./modules/local/trimmomatic.nf"
 include { EXTRACT_SINGLETONS } from "./modules/local/extract_singleton.nf"
 include { RUN_KRAKEN_ONE; RUN_KRAKEN_TWO; } from "./modules/local/kraken.nf"
+include { SPADES } from "./modules/local/spades.nf"
+include { FILTER_CONTIGS } from "./modules/local/filter_contigs.nf"
+include { CLEAN_READS } from "./modules/local/clean_reads.nf"
+include { COVERAGE } from "./modules/local/coverage.nf"
+include { MLST } from "./modules/local/mlst.nf"
+include { ANNOTATE } from "./modules/local/annotate.nf"
+include { EXTRACT_RECORDS } from "./modules/local/extract_records.nf"
+include { BARRNAP } from "./modules/local/barrnap.nf"
+include { BLAST } from "./modules/local/blast.nf"
+include { FILTER_BLAST } from "./modules/local/filter_blast.nf"
 
 
 /*
@@ -138,6 +148,9 @@ workflow {
     output_ch = Channel.fromPath(params.outpath)
     phix_ch = Channel.fromPath('files/PhiX_NC_001422.1.fasta', checkIfExists: true)
     adapters_ch = Channel.fromPath('files/adapters_Nextera_NEB_TruSeq_NuGEN_ThruPLEX.fas', checkIfExists: true)
+    filter_contigs_ch = Channel.fromPath('files/filter.contigs.py', checkIfExists: true)
+    extract_record_ch = Channel.fromPath('files/extract.record.from.genbank.py', checkIfExists: true)
+    filter_blast_ch = Channel.fromPath('files/filter.blast.py')
 
     INFILE_HANDLING(
         input_ch
@@ -151,7 +164,8 @@ workflow {
     RUN_TRIMMOMATIC (
         adapters_ch,
         REMOVE_PHIX.out.noPhiX_R1,
-        REMOVE_PHIX.out.noPhiX_R2
+        REMOVE_PHIX.out.noPhiX_R2,
+        output_ch
     )
 
     EXTRACT_SINGLETONS (
@@ -171,6 +185,65 @@ workflow {
         EXTRACT_SINGLETONS.out.R2_paired_gz,
         EXTRACT_SINGLETONS.out.single_gz
     )
+
+    SPADES (
+        EXTRACT_SINGLETONS.out.R1_paired_gz,
+        EXTRACT_SINGLETONS.out.R2_paired_gz,
+        EXTRACT_SINGLETONS.out.single_gz,
+        output_ch
+    )
+
+    FILTER_CONTIGS (
+        filter_contigs_ch,
+        SPADES.out.contigs,
+        EXTRACT_SINGLETONS.out.R1_paired_gz,
+        output_ch
+    )
+
+    CLEAN_READS (
+        FILTER_CONTIGS.out.uncorrected_contigs,
+        EXTRACT_SINGLETONS.out.R1_paired_gz,
+        EXTRACT_SINGLETONS.out.R2_paired_gz,
+        EXTRACT_SINGLETONS.out.single_gz,
+        output_ch
+    )
+
+    COVERAGE (
+        CLEAN_READS.out.single_bam,
+        CLEAN_READS.out.paired_bam
+    )
+
+    MLST (
+        CLEAN_READS.out.base_fna
+    )
+
+    ANNOTATE (
+        CLEAN_READS.out.base_fna
+    )
+
+    EXTRACT_RECORDS (
+        extract_record_ch,
+        ANNOTATE.out.annotation
+    )
+
+    BARRNAP (
+        EXTRACT_RECORDS.out.extracted_rna,
+        CLEAN_READS.out.base_fna,
+        ANNOTATE.out.annotation
+    )
+
+    BLAST (
+        BARRNAP.out.extracted_base,
+        CLEAN_READS.out.base_fna
+    )
+
+    FILTER_BLAST (
+        filter_blast_ch,
+        BLAST.out.blast_tsv,
+        CLEAN_READS.out.base_fna,
+        output_ch
+    )
+
 }
 
 /*

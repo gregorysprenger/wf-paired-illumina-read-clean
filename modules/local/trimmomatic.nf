@@ -1,8 +1,8 @@
 process RUN_TRIMMOMATIC {
 
-    publishDir "${params.outpath}",
+    publishDir "${params.outpath}/trim_reads",
         mode: "${params.publish_dir_mode}",
-        pattern: "*"
+        pattern: "*.tsv"
     publishDir "${params.process_log_dir}",
         mode: "${params.publish_dir_mode}",
         pattern: ".command.*",
@@ -14,6 +14,7 @@ process RUN_TRIMMOMATIC {
         path ADAPTERS
         path noPhiX_R1
         path noPhiX_R2
+        path outpath
 
     output:
         path "*R1.paired.fq", emit: R1_paired

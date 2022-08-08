@@ -1,6 +1,6 @@
 process RUN_KRAKEN_ONE {
 
-    publishDir "${params.outpath}",
+    publishDir "${params.outpath}/trim_reads",
         mode: "${params.publish_dir_mode}",
         pattern: "*"
     publishDir "${params.process_log_dir}",
@@ -52,7 +52,7 @@ process RUN_KRAKEN_ONE {
 
 process RUN_KRAKEN_TWO {
 
-    publishDir "${params.outpath}",
+    publishDir "${params.outpath}/trim_reads",
         mode: "${params.publish_dir_mode}",
         pattern: "*"
     publishDir "${params.process_log_dir}",
