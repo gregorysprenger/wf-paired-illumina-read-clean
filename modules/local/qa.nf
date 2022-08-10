@@ -27,7 +27,7 @@ process QA {
     base=$(basename "!{base_fna}" | cut -d . -f 1 | sed 's/[-.,]//g')
 
     NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
-    echo "INFO: Number of threads found: ${NSLOTS}
+    echo "INFO: Number of threads found: ${NSLOTS}"
 
     quast.py --output-dir quast --min-contig 100 --threads ${NSLOTS} \
     --no-html --gene-finding --gene-thresholds 300 --contig-thresholds 500,1000 \
