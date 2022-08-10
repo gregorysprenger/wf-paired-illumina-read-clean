@@ -20,7 +20,8 @@ process SPADES {
     output:
         path "spades/"
         path "spades/contigs.fasta", emit: contigs
-
+        path ".command.out"
+        path ".command.err"
 
     shell:
     '''
@@ -43,14 +44,14 @@ process SPADES {
             mv -f tmp/spades.log \
             tmp/"${failed}"of3-asm-attempt-failed.spades.log 2> /dev/null
             echo "INFO: SPAdes failure ${failed}; retrying assembly for ${base}" >&2
-            spades.py --restart-from last -o tmp -t ${NSLOTS} >&2
+            spades.py --restart-from last -o tmp -t !{task.cpus} >&2
         else
             spades.py --pe1-1 !{R1_paired_gz}\
             --pe1-2 !{R2_paired_gz}\
             --pe1-s !{single_gz}\
             --memory "${RAMSIZE_TOT}"\
             -o tmp --phred-offset 33\
-            -t ${NSLOTS} --only-assembler >&2
+            -t !{task.cpus} --only-assembler >&2
         fi
         failed=$((${failed}+1))
     done

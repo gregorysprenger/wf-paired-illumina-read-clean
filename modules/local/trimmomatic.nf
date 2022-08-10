@@ -1,4 +1,4 @@
-process RUN_TRIMMOMATIC {
+process TRIMMOMATIC {
 
     publishDir "${params.outpath}/trim_reads",
         mode: "${params.publish_dir_mode}",
@@ -42,7 +42,7 @@ process RUN_TRIMMOMATIC {
     NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
     echo "INFO: Number of threads found: ${NSLOTS}"
 
-    trimmomatic PE -phred33 -threads $NSLOTS\
+    trimmomatic PE -phred33 -threads ${NSLOTS}\
     !{noPhiX_R1} !{noPhiX_R2}\
     ${base}_R1.paired.fq ${base}_R1.unpaired.fq\
     ${base}_R2.paired.fq ${base}_R2.unpaired.fq\
@@ -50,8 +50,6 @@ process RUN_TRIMMOMATIC {
     SLIDINGWINDOW:6:30 LEADING:10 TRAILING:10 MINLEN:50
 
     echo "INFO: Finished trimmomatic"
-
-    rm -f !{noPhiX_R1} !{noPhiX_R2}
 
     TRIMMO_DISCARD=$(grep '^Input Read Pairs: ' .command.err \
     | grep ' Dropped: ' | awk '{print $20}')

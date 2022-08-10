@@ -14,6 +14,8 @@ process MLST {
 
     output:
         path "Summary.MLST.tab"
+        path ".command.out"
+        path ".command.err"
 
     shell:
     '''

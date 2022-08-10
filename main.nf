@@ -16,8 +16,10 @@ def helpMessage() {
     =========================================
     Usage:
     nextflow run -profile <docker|singularity> main.nf --inpath <input directory> --outpath <directory for results>
+
     Run with test data:
     nextflow run main.nf -profile test,<docker|singularity> --outpath results
+    
     Input/output options:
       --inpath             Path to input data directory containing FastA assemblies. Recognized extensions are:  fa, fasta, fas, fna, fsa, fa.gz, fasta.gz, fas.gz, fna.gz, fsa.gz.
       --outpath            The output directory where the results will be saved.
@@ -114,20 +116,21 @@ log.info """
 
 include { INFILE_HANDLING } from "./modules/local/infile_handling.nf"
 include { REMOVE_PHIX } from "./modules/local/remove_phix.nf"
-include { RUN_TRIMMOMATIC } from "./modules/local/trimmomatic.nf"
+include { TRIMMOMATIC } from "./modules/local/trimmomatic.nf"
 include { EXTRACT_SINGLETONS } from "./modules/local/extract_singleton.nf"
-include { RUN_KRAKEN_ONE; RUN_KRAKEN_TWO; } from "./modules/local/kraken.nf"
+include { KRAKEN_ONE; KRAKEN_TWO; } from "./modules/local/kraken.nf"
 include { SPADES } from "./modules/local/spades.nf"
 include { FILTER_CONTIGS } from "./modules/local/filter_contigs.nf"
 include { CLEAN_READS } from "./modules/local/clean_reads.nf"
-include { COVERAGE } from "./modules/local/coverage.nf"
+include { CLEANED_COVERAGE } from "./modules/local/cleaned_coverage.nf"
 include { MLST } from "./modules/local/mlst.nf"
 include { ANNOTATE } from "./modules/local/annotate.nf"
 include { EXTRACT_RECORDS } from "./modules/local/extract_records.nf"
 include { BARRNAP } from "./modules/local/barrnap.nf"
 include { BLAST } from "./modules/local/blast.nf"
 include { FILTER_BLAST } from "./modules/local/filter_blast.nf"
-
+include { QA } from "./modules/local/qa.nf"
+include { GENOME_COVERAGE } from "./modules/local/genome_coverage.nf"
 
 /*
 ========================================================================================
@@ -161,7 +164,7 @@ workflow {
         INFILE_HANDLING.out.R2
     )
 
-    RUN_TRIMMOMATIC (
+    TRIMMOMATIC (
         adapters_ch,
         REMOVE_PHIX.out.noPhiX_R1,
         REMOVE_PHIX.out.noPhiX_R2,
@@ -170,17 +173,17 @@ workflow {
 
     EXTRACT_SINGLETONS (
         INFILE_HANDLING.out.R1,
-        RUN_TRIMMOMATIC.out.R1_paired,
-        RUN_TRIMMOMATIC.out.R2_paired
+        TRIMMOMATIC.out.R1_paired,
+        TRIMMOMATIC.out.R2_paired
     )
 
-    RUN_KRAKEN_ONE (
+    KRAKEN_ONE (
         EXTRACT_SINGLETONS.out.R1_paired_gz,
         EXTRACT_SINGLETONS.out.R2_paired_gz,
         EXTRACT_SINGLETONS.out.single_gz
     )
 
-    RUN_KRAKEN_TWO (
+    KRAKEN_TWO (
         EXTRACT_SINGLETONS.out.R1_paired_gz,
         EXTRACT_SINGLETONS.out.R2_paired_gz,
         EXTRACT_SINGLETONS.out.single_gz
@@ -208,7 +211,7 @@ workflow {
         output_ch
     )
 
-    COVERAGE (
+    CLEANED_COVERAGE (
         CLEAN_READS.out.single_bam,
         CLEAN_READS.out.paired_bam
     )
@@ -244,6 +247,18 @@ workflow {
         output_ch
     )
 
+    QA (
+        CLEAN_READS.out.base_fna,
+        EXTRACT_SINGLETONS.out.R1_paired_gz,
+        EXTRACT_SINGLETONS.out.R2_paired_gz,
+        EXTRACT_SINGLETONS.out.single_gz
+    )
+
+    GENOME_COVERAGE (
+        CLEANED_COVERAGE.out.summary_stats,
+        QA.out.summary_assemblies,
+        QA.out.summary_bases
+    )
 }
 
 /*

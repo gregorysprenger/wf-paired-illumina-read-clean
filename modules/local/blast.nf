@@ -12,6 +12,8 @@ process BLAST {
 
     output:
         path "*.blast.tsv", emit: blast_tsv
+        path ".command.out"
+        path ".command.err"
 
     shell:
     '''
@@ -31,10 +33,10 @@ process BLAST {
     export BLASTDB=db
 
     NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
-    echo "INFO: Number of threads found: ${NSLOTS}"
+    echo "INFO: Number of threads found: !{task.cpus}"
 
     blastn -word_size 10 -task blastn -db 16S_ribosomal_RNA \
-    -num_threads "${NSLOTS}" \
+    -num_threads "!{task.cpus}" \
     -query "!{extracted_base}" \
     -out "${base}.blast.tsv" \
     -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovhsp ssciname"

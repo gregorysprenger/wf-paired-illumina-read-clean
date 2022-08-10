@@ -22,6 +22,8 @@ process FILTER_BLAST {
         path "Summary.16S.tab"
         path "*.blast.tsv.gz"
         path "*species.tsv"
+        path ".command.out"
+        path ".command.err"
 
     shell:
     '''

@@ -16,6 +16,8 @@ process BARRNAP {
 
     output:
         path "16s.*.fa", emit: extracted_base
+        path ".command.out"
+        path ".command.err"
         
 
     shell:

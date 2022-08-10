@@ -25,6 +25,8 @@ process CLEAN_READS {
         path "*.fna", emit: base_fna
         path "*.paired.bam", emit: paired_bam
         path "*.single.bam", emit: single_bam
+        path ".command.out"
+        path ".command.err"
 
     shell:
     '''
@@ -40,13 +42,13 @@ process CLEAN_READS {
     echo -n '' > ${base}.SNPs-corrected.cnt.txt
 
     NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
-    echo "INFO: Number of threads found: ${NSLOTS}"
+    echo "INFO: Number of threads found: !{task.cpus}"
 
     for _ in {1..3}; do
         bwa index !{uncorrected_contigs}
-        bwa mem -t ${NSLOTS} -x intractg -v 2 !{uncorrected_contigs}\
+        bwa mem -t !{task.cpus} -x intractg -v 2 !{uncorrected_contigs}\
         !{R1_paired_gz} !{R2_paired_gz} |\
-        samtools sort -@ ${NSLOTS} --reference !{uncorrected_contigs} -l 9\
+        samtools sort -@ !{task.cpus} --reference !{uncorrected_contigs} -l 9\
         -o ${base}.paired.bam
 
         #rm -f !{uncorrected_contigs}.{ann,amb,bwt,pac,sa}
@@ -57,7 +59,7 @@ process CLEAN_READS {
 
         pilon --genome !{uncorrected_contigs} --frags ${base}.paired.bam\
         --output "${base}" --changes \
-        --fix snps,indels --mindepth 0.50 --threads ${NSLOTS} >&2
+        --fix snps,indels --mindepth 0.50 --threads !{task.cpus} >&2
 
         #verify_file_minimum_size "!{uncorrected_contigs}" 'polished assembly' '1K' #1M
 
@@ -80,9 +82,9 @@ process CLEAN_READS {
     if [[ !{single_gz} ]]; then
         bwa index ${base}.fna
 
-        bwa mem -t ${NSLOTS} -x intractg -v 2 ${base}.fna\
+        bwa mem -t !{task.cpus} -x intractg -v 2 ${base}.fna\
         !{single_gz} |\
-        samtools sort -@ ${NSLOTS} --reference ${base}.fna -l 9\
+        samtools sort -@ !{task.cpus} --reference ${base}.fna -l 9\
         -o ${base}.single.bam
 
         #verify_file_minimum_size "${base}.single.bam" 'binary sequence alignment map' '1k'

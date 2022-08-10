@@ -49,7 +49,7 @@ process EXTRACT_SINGLETONS {
             echo "INFO: Number of threads found: ${NSLOTS}"
 
             echo "INFO: Running flash"
-            flash -M ${OVERLAP_LEN} -o flash -t ${NSLOTS} !{R1_paired} !{R2_paired}
+            flash -m ${OVERLAP_LEN} -M ${OVERLAP_LEN} -o flash -t ${NSLOTS} !{R1_paired} !{R2_paired}
             echo "INFO: Finished running flash"
 
             echo "INFO: Verify flash file size"

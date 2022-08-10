@@ -14,6 +14,8 @@ process FILTER_CONTIGS {
 
     output:
         path "*.uncorrected.fna", emit: uncorrected_contigs
+        path ".command.out"
+        path ".command.err"
 
     shell:
     '''

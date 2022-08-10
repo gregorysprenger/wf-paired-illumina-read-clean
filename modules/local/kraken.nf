@@ -1,4 +1,4 @@
-process RUN_KRAKEN_ONE {
+process KRAKEN_ONE {
 
     publishDir "${params.outpath}/trim_reads",
         mode: "${params.publish_dir_mode}",
@@ -18,6 +18,8 @@ process RUN_KRAKEN_ONE {
     output:
         path "*taxonomy-reads.tab"
         path "*kraken.tab.gz"
+        path ".command.out"
+        path ".command.err"
 
     shell:
     '''
@@ -30,10 +32,10 @@ process RUN_KRAKEN_ONE {
     if [ ! -s ${base}_taxonomy-reads.tab ]; then
 
         NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
-        echo "INFO: Number of threads found: ${NSLOTS}"
+        echo "INFO: Number of threads found: !{task.cpus}"
 
         echo "INFO: Starting Kraken1"
-        kraken --db /kraken-database/minikraken_20171013_4GB --threads ${NSLOTS} --fastq-input --gzip-compressed \
+        kraken --db /kraken-database/minikraken_20171013_4GB --threads !{task.cpus} --fastq-input --gzip-compressed \
         !{R1_paired_gz} !{R2_paired_gz} !{single_gz} > ${base}_kraken.output
 
         echo "INFO: Run kraken-report"
@@ -50,7 +52,7 @@ process RUN_KRAKEN_ONE {
     '''
 }
 
-process RUN_KRAKEN_TWO {
+process KRAKEN_TWO {
 
     publishDir "${params.outpath}/trim_reads",
         mode: "${params.publish_dir_mode}",
@@ -81,10 +83,10 @@ process RUN_KRAKEN_TWO {
     if [ ! -s ${base}_taxonomy2-reads.tab ]; then
 
         NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
-        echo "INFO: Number of threads found: ${NSLOTS}"
+        echo "INFO: Number of threads found: !{task.cpus}"
 
         echo "INFO: Starting Kraken2"
-        kraken2 --db /kraken2-db --threads ${NSLOTS} --gzip-compressed --output /dev/null \
+        kraken2 --db /kraken2-db --threads !{task.cpus} --gzip-compressed --output /dev/null \
         --use-names --report kraken2.tab \
         !{R1_paired_gz} !{R2_paired_gz} !{single_gz}
         echo "INFO: Kraken2 finished"

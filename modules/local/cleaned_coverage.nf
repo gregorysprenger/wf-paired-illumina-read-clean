@@ -1,7 +1,7 @@
-process COVERAGE {
+process CLEANED_COVERAGE {
     publishDir "${params.outpath}/qa",
         mode: "${params.publish_dir_mode}",
-        pattern: "*"
+        pattern: "*.tab"
     publishDir "${params.process_log_dir}",
         mode: "${params.publish_dir_mode}",
         pattern: ".command.*",
@@ -14,7 +14,9 @@ process COVERAGE {
         path paired_bam
 
     output:
-        path "*"
+        path "Summary.Illumina.CleanedReads-AlnStats.tab", emit: summary_stats
+        path ".command.out"
+        path ".command.err"
 
     shell:
     '''
@@ -33,7 +35,6 @@ process COVERAGE {
     awk -v SEcov="${single_cov}" 'BEGIN{sum=0} {sum+=$3} END{
     print sum " bp Paired Reads Mapped (" sum/NR "x)\t" SEcov NR " bp Genome"}')
 
-    #rm -f ${base}.{paired,single}.bam{,.bai}
     echo -e "${base}\t${cov_nfo}" >> \
     Summary.Illumina.CleanedReads-AlnStats.tab
     

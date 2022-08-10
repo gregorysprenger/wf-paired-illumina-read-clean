@@ -14,6 +14,8 @@ process ANNOTATE {
         
     output:
         path "*.gbk", emit: annotation
+        path ".command.out"
+        path ".command.err"
 
     shell:
     '''

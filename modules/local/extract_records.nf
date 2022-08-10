@@ -12,6 +12,8 @@ process EXTRACT_RECORDS {
 
     output:
         path "16S.*.fa", emit: extracted_rna
+        path ".command.out"
+        path ".command.err"
 
     shell:
     '''
