@@ -10,6 +10,8 @@ process CLEAN_READS {
         pattern: ".command.*",
         saveAs: { filename -> "${task.process}${filename}"}
 
+    label "process_medium"
+
     container "gregorysprenger/bwa-samtools-pilon@sha256:209ac13b381188b4a72fe746d3ff93d1765044cbf73c3957e4e2f843886ca57f"
     
     input:
@@ -46,12 +48,11 @@ process CLEAN_READS {
 
     for _ in {1..3}; do
         bwa index !{uncorrected_contigs}
+
         bwa mem -t !{task.cpus} -x intractg -v 2 !{uncorrected_contigs}\
         !{R1_paired_gz} !{R2_paired_gz} |\
         samtools sort -@ !{task.cpus} --reference !{uncorrected_contigs} -l 9\
         -o ${base}.paired.bam
-
-        #rm -f !{uncorrected_contigs}.{ann,amb,bwt,pac,sa}
 
         #verify_file_minimum_size "${base}.paired.bam" 'binary sequence alignment map' '1M' #25M
 

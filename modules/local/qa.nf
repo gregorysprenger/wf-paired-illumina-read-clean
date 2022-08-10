@@ -7,6 +7,8 @@ process QA {
         pattern: ".command.*",
         saveAs: { filename -> "${task.process}${filename}"}
     
+    label "process_low"
+    
     container "snads/quast@sha256:c8147a279feafbc88bafeeda3817ff32d43db87d31dd0978df1cd2f8022d324c"
 
     input:
@@ -27,9 +29,9 @@ process QA {
     base=$(basename "!{base_fna}" | cut -d . -f 1 | sed 's/[-.,]//g')
 
     NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
-    echo "INFO: Number of threads found: ${NSLOTS}"
+    echo "INFO: Number of threads found: !{task.cpus}"
 
-    quast.py --output-dir quast --min-contig 100 --threads ${NSLOTS} \
+    quast.py --output-dir quast --min-contig 100 --threads !{task.cpus} \
     --no-html --gene-finding --gene-thresholds 300 --contig-thresholds 500,1000 \
     --ambiguity-usage one --strict-NA --silent "!{base_fna}" >&2
 

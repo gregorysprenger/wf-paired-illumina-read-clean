@@ -7,6 +7,8 @@ process REMOVE_PHIX {
         mode: "${params.publish_dir_mode}",
         pattern: ".command.*",
         saveAs: { filename -> "${task.process}${filename}"}
+
+    label "process_medium"
     
     container "snads/bbtools@sha256:9f2a9b08563839cec87d856f0fc7607c235f464296fd71e15906ea1d15254695"
     
@@ -39,9 +41,9 @@ process REMOVE_PHIX {
     echo "INFO: Starting bbduck"
 
     NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
-    echo "INFO: Number of threads found: ${NSLOTS}"
+    echo "INFO: Number of threads found: !{task.cpus}"
 
-    bbduk.sh threads=4 k=31 hdist=1\
+    bbduk.sh threads=!{task.cpus} k=31 hdist=1\
     ref="!{PHIX}" in="!{R1}" in2="!{R2}"\
     out=${base}_noPhiX-R1.fsq out2=${base}_noPhiX-R2.fsq\
     qin=auto qout=33 overwrite=t

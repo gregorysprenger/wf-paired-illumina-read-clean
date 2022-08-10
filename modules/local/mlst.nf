@@ -22,10 +22,10 @@ process MLST {
     # MLST for each assembly
 
     NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
-    echo "INFO: Number of threads found: ${NSLOTS}"
+    echo "INFO: Number of threads found: !{task.cpus}"
 
     if [ -s !{base_fna} ]; then
-        mlst --threads $NSLOTS "!{base_fna}" \
+        mlst --threads !{task.cpus} "!{base_fna}" \
         >> Summary.MLST.tab
     fi
 

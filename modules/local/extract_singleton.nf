@@ -8,6 +8,7 @@ process EXTRACT_SINGLETONS {
         pattern: ".command.*",
         saveAs: { filename -> "${task.process}${filename}"}
 
+    label "process_low"
 
     container "snads/flash@sha256:363b2f44d040c669191efbc3d3ba99caf5efd3fdef370af8f00f3328932143a6"
 
@@ -46,10 +47,10 @@ process EXTRACT_SINGLETONS {
             echo "INFO: ${OVERLAP_LEN} bp overlap will be required for sister reads to be merged" >&2
 
             NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
-            echo "INFO: Number of threads found: ${NSLOTS}"
+            echo "INFO: Number of threads found: !{task.cpus}"
 
             echo "INFO: Running flash"
-            flash -m ${OVERLAP_LEN} -M ${OVERLAP_LEN} -o flash -t ${NSLOTS} !{R1_paired} !{R2_paired}
+            flash -m ${OVERLAP_LEN} -M ${OVERLAP_LEN} -o flash -t !{task.cpus} !{R1_paired} !{R2_paired}
             echo "INFO: Finished running flash"
 
             echo "INFO: Verify flash file size"
