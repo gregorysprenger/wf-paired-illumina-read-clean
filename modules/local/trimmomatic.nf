@@ -26,6 +26,7 @@ process TRIMMOMATIC {
 
     shell:
     '''
+
     source bash_functions.sh
 
     # Get basename of input file
@@ -82,5 +83,6 @@ process TRIMMOMATIC {
     for suff in R1.paired.fq R2.paired.fq ; do
         verify_file_minimum_size "${base}_${suff}" 'cleaned read' '10M' #25
     done
+    
     '''
 }

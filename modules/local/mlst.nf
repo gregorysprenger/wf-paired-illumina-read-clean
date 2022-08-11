@@ -1,4 +1,5 @@
 process MLST {
+
     publishDir "${params.outpath}/qa",
         mode: "${params.publish_dir_mode}",
         pattern: "*"
@@ -19,6 +20,7 @@ process MLST {
 
     shell:
     '''
+
     # MLST for each assembly
 
     NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
@@ -28,7 +30,6 @@ process MLST {
         mlst --threads !{task.cpus} "!{base_fna}" \
         >> Summary.MLST.tab
     fi
-
 
     '''
 }

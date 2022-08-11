@@ -1,4 +1,5 @@
 process QA {
+
     publishDir "${params.outpath}/qa",
         mode: "${params.publish_dir_mode}",
         pattern: "*.tab"
@@ -25,6 +26,7 @@ process QA {
 
     shell:
     '''
+    
     # Get basename of input file
     base=$(basename "!{base_fna}" | cut -d . -f 1 | sed 's/[-.,]//g')
 

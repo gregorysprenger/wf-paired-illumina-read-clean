@@ -1,4 +1,5 @@
 process FILTER_BLAST {
+    
     publishDir "${params.outpath}/ssu",
         mode: "${params.publish_dir_mode}",
         pattern: "*.tsv*"
@@ -27,6 +28,7 @@ process FILTER_BLAST {
 
     shell:
     '''
+
     source bash_functions.sh
     
     # Get basename of input file

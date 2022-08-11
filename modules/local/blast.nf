@@ -1,4 +1,5 @@
 process BLAST {
+    
     publishDir "${params.process_log_dir}",
         mode: "${params.publish_dir_mode}",
         pattern: ".command.*",
@@ -17,6 +18,7 @@ process BLAST {
 
     shell:
     '''
+
     source bash_functions.sh
 
     # Classify each 16S sequence record
@@ -43,6 +45,5 @@ process BLAST {
 
     #verify_file_minimum_size "${base}.blast.tsv" '16S blastn nr output file' '10c'
 
-    
     '''
 }

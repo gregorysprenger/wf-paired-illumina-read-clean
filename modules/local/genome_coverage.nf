@@ -1,4 +1,5 @@
 process GENOME_COVERAGE {
+
     publishDir "${params.outpath}/qa",
         mode: "${params.publish_dir_mode}",
         pattern: "*.tab"
@@ -7,7 +8,6 @@ process GENOME_COVERAGE {
         pattern: ".command.*",
         saveAs: { filename -> "${task.process}${filename}"}
     
-
     input:
         path summary_stats
         path summary_assemblies
@@ -20,6 +20,7 @@ process GENOME_COVERAGE {
 
     shell:
     '''
+
     # Report coverage
     echo -n '' > Summary.Illumina.GenomeCoverage.tab
     i=0
@@ -44,5 +45,6 @@ process GENOME_COVERAGE {
             ((i=i+1))
         fi
     done < <(grep -v 'Total length' !{summary_assemblies})
+    
     '''
 }

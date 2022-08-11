@@ -25,6 +25,7 @@ process KRAKEN_ONE {
 
     shell:
     '''
+
     source summarize_kraken.sh
 
     # Get basename of input file
@@ -51,6 +52,7 @@ process KRAKEN_ONE {
         mv kraken.tab ${base}_kraken.tab
         gzip ${base}_kraken.tab
     fi
+
     '''
 }
 
@@ -79,6 +81,7 @@ process KRAKEN_TWO {
 
     shell:
     '''
+
     source summarize_kraken.sh
 
     # Get basename of input file
@@ -103,5 +106,6 @@ process KRAKEN_TWO {
         gzip ${base}_kraken2.tab
 
     fi
+    
     '''
 }

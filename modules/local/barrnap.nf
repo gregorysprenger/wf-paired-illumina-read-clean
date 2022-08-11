@@ -1,4 +1,5 @@
 process BARRNAP {
+    
     publishDir "${params.outpath}/ssu",
         mode: "${params.publish_dir_mode}",
         pattern: "*"
@@ -22,6 +23,7 @@ process BARRNAP {
 
     shell:
     '''
+
     source bash_functions.sh
 
     # Get basename of input file
@@ -51,5 +53,6 @@ process BARRNAP {
     mv -f ${base}.fa-renamed 16s.${base}.fa
 
     #verify_file_minimum_size "16s.${base}.fa" '16S extracted and renamed FastA file' '500c'
+
     '''
 }

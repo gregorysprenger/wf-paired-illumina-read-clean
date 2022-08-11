@@ -11,7 +11,6 @@ process SPADES {
     label "process_high"
 
     container "staphb/spades@sha256:e9c50ffb4b6f0ce4d3c504dd0ce1cb3381ae942ff4d5bac24dc78119b3bfd0dd"
-    
 
     input:
         path R1_paired_gz
@@ -27,6 +26,7 @@ process SPADES {
 
     shell:
     '''
+    
     source bash_functions.sh
 
     # Get basename of input file

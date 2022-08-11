@@ -1,4 +1,5 @@
 process CLEANED_COVERAGE {
+    
     publishDir "${params.outpath}/qa",
         mode: "${params.publish_dir_mode}",
         pattern: "*.tab"
@@ -20,6 +21,7 @@ process CLEANED_COVERAGE {
 
     shell:
     '''
+
     # Calculate coverage
 
     # Get basename of input file

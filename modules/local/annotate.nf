@@ -1,4 +1,5 @@
 process ANNOTATE {
+    
     publishDir "${params.outpath}/annot",
         mode: "${params.publish_dir_mode}",
         pattern: "*"
@@ -21,6 +22,7 @@ process ANNOTATE {
 
     shell:
     '''
+
     source bash_functions.sh
     
     # Annotate cleaned and corrected assembly
@@ -43,5 +45,6 @@ process ANNOTATE {
         break
     fi
     done
+
     '''
 }

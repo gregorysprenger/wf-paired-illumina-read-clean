@@ -1,4 +1,5 @@
 process INFILE_HANDLING {
+
     publishDir "${params.process_log_dir}",
         mode: "${params.publish_dir_mode}",
         pattern: ".command.*",
@@ -15,6 +16,7 @@ process INFILE_HANDLING {
         
     shell:
         '''
+
         source bash_functions.sh
         
         shopt -s nullglob
@@ -31,5 +33,4 @@ process INFILE_HANDLING {
         cp ${R2} .
         
         '''
-
 }

@@ -1,4 +1,5 @@
 process CLEAN_READS {
+    
     publishDir "${params.outpath}/asm",
         mode: "${params.publish_dir_mode}",
         pattern: "*.txt"
@@ -32,6 +33,7 @@ process CLEAN_READS {
 
     shell:
     '''
+
     source bash_functions.sh
 
     # Get basename of input file

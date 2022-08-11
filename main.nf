@@ -153,11 +153,12 @@ workflow {
     adapters_ch = Channel.fromPath('files/adapters_Nextera_NEB_TruSeq_NuGEN_ThruPLEX.fas', checkIfExists: true)
     filter_contigs_ch = Channel.fromPath('files/filter.contigs.py', checkIfExists: true)
     extract_record_ch = Channel.fromPath('files/extract.record.from.genbank.py', checkIfExists: true)
-    filter_blast_ch = Channel.fromPath('files/filter.blast.py')
+    filter_blast_ch = Channel.fromPath('files/filter.blast.py', checkIfExists: true)
 
-    INFILE_HANDLING(
+    INFILE_HANDLING (
         input_ch
     )
+
     REMOVE_PHIX (
         phix_ch,
         INFILE_HANDLING.out.R1,

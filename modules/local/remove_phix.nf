@@ -8,7 +8,7 @@ process REMOVE_PHIX {
         pattern: ".command.*",
         saveAs: { filename -> "${task.process}${filename}"}
 
-    label "process_medium"
+    label "process_low"
     
     container "snads/bbtools@sha256:9f2a9b08563839cec87d856f0fc7607c235f464296fd71e15906ea1d15254695"
     
@@ -27,6 +27,7 @@ process REMOVE_PHIX {
 
     shell:
     '''
+
     source bash_functions.sh
 
     # Get basename of input file
@@ -76,6 +77,6 @@ process REMOVE_PHIX {
     > ${base}_raw.tsv
     echo -e "${base}\t${PHIX_BASES:-0} bp PhiX\t${PHIX_READS:-0} reads PhiX" \
     > ${base}_phix.tsv
-    '''
 
+    '''
 }
