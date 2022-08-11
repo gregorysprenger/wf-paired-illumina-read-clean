@@ -32,7 +32,6 @@ process KRAKEN_ONE {
     # Investigate taxonomic identity of cleaned reads
     if [ ! -s !{base}_taxonomy-reads.tab ]; then
 
-        NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
         echo "INFO: Number of threads found: !{task.cpus}"
 
         echo "INFO: Starting Kraken1"
@@ -84,8 +83,6 @@ process KRAKEN_TWO {
     source summarize_kraken.sh
 
     if [ ! -s !{base}_taxonomy2-reads.tab ]; then
-
-        NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
         echo "INFO: Number of threads found: !{task.cpus}"
 
         echo "INFO: Starting Kraken2"

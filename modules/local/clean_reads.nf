@@ -43,7 +43,6 @@ process CLEAN_READS {
     echo -n '' > !{base}.InDels-corrected.cnt.txt
     echo -n '' > !{base}.SNPs-corrected.cnt.txt
 
-    NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
     echo "INFO: Number of threads found: !{task.cpus}"
 
     for _ in {1..3}; do

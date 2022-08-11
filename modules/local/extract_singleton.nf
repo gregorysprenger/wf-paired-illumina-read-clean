@@ -45,7 +45,6 @@ process EXTRACT_SINGLETONS {
         if [ ${OVERLAP_LEN} -gt 0 ]; then
             echo "INFO: ${OVERLAP_LEN} bp overlap will be required for sister reads to be merged" >&2
 
-            NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
             echo "INFO: Number of threads found: !{task.cpus}"
 
             echo "INFO: Running flash"

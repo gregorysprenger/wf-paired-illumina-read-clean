@@ -32,7 +32,6 @@ process BLAST {
     cd ..
     export BLASTDB=db
 
-    NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
     echo "INFO: Number of threads found: !{task.cpus}"
 
     blastn -word_size 10 -task blastn -db 16S_ribosomal_RNA \
