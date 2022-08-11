@@ -1,5 +1,5 @@
 process EXTRACT_SINGLETONS {
-
+    
     publishDir "${params.outpath}/trim_reads",
         mode: "${params.publish_dir_mode}",
         pattern: "*"
@@ -28,6 +28,7 @@ process EXTRACT_SINGLETONS {
 
     shell:
         '''
+
         source bash_functions.sh
 
         # Get basename of input file
@@ -37,7 +38,7 @@ process EXTRACT_SINGLETONS {
         echo -e "$(zcat "!{R1}" | head -n 400 > read_R1_len.txt)"
         READ_LEN=$(awk 'NR%4==2 {if(length > x) {x=length; y=$0}} END{print length(y)}' read_R1_len.txt)
 
-        echo "INFO: $READ_LEN bp read length detected from raw input" >&2
+        echo "INFO: ${READ_LEN} bp read length detected from raw input" >&2
         OVERLAP_LEN=$(echo | awk -v n=${READ_LEN} '{print int(n*0.8)}')
 
         echo "INFO: OVERLAP_LEN is ${OVERLAP_LEN}"
@@ -50,7 +51,7 @@ process EXTRACT_SINGLETONS {
             echo "INFO: Number of threads found: !{task.cpus}"
 
             echo "INFO: Running flash"
-            flash -m ${OVERLAP_LEN} -M ${OVERLAP_LEN} -o flash -t !{task.cpus} !{R1_paired} !{R2_paired}
+            flash -m ${OVERLAP_LEN} -M ${READ_LEN} -o flash -t !{task.cpus} !{R1_paired} !{R2_paired}
             echo "INFO: Finished running flash"
 
             echo "INFO: Verify flash file size"
@@ -96,5 +97,4 @@ process EXTRACT_SINGLETONS {
         ${base}_R2.paired.fq
 
         '''
-
 }
