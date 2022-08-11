@@ -17,6 +17,7 @@ process QA {
         path R1_paired_gz
         path R2_paired_gz
         path single_gz
+        val base
 
     output:
         path "Summary.Assemblies.tab", emit: summary_assemblies
@@ -26,11 +27,8 @@ process QA {
 
     shell:
     '''
-    
-    # Get basename of input file
-    base=$(basename "!{base_fna}" | cut -d . -f 1 | sed 's/[-.,]//g')
 
-    NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
+    # Run Quast
     echo "INFO: Number of threads found: !{task.cpus}"
 
     quast.py --output-dir quast --min-contig 100 --threads !{task.cpus} \

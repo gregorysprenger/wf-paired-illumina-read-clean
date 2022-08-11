@@ -169,7 +169,8 @@ workflow {
         adapters_ch,
         REMOVE_PHIX.out.noPhiX_R1,
         REMOVE_PHIX.out.noPhiX_R2,
-        output_ch
+        output_ch,
+        INFILE_HANDLING.out.base
     )
 
     EXTRACT_SINGLETONS (
@@ -182,27 +183,31 @@ workflow {
     KRAKEN_ONE (
         EXTRACT_SINGLETONS.out.R1_paired_gz,
         EXTRACT_SINGLETONS.out.R2_paired_gz,
-        EXTRACT_SINGLETONS.out.single_gz
+        EXTRACT_SINGLETONS.out.single_gz,
+        INFILE_HANDLING.out.base
     )
 
     KRAKEN_TWO (
         EXTRACT_SINGLETONS.out.R1_paired_gz,
         EXTRACT_SINGLETONS.out.R2_paired_gz,
-        EXTRACT_SINGLETONS.out.single_gz
+        EXTRACT_SINGLETONS.out.single_gz,
+        INFILE_HANDLING.out.base
     )
 
     SPADES (
         EXTRACT_SINGLETONS.out.R1_paired_gz,
         EXTRACT_SINGLETONS.out.R2_paired_gz,
         EXTRACT_SINGLETONS.out.single_gz,
-        output_ch
+        output_ch,
+        INFILE_HANDLING.out.base
     )
 
     FILTER_CONTIGS (
         filter_contigs_ch,
         SPADES.out.contigs,
         EXTRACT_SINGLETONS.out.R1_paired_gz,
-        output_ch
+        output_ch,
+        INFILE_HANDLING.out.base
     )
 
     CLEAN_READS (
@@ -210,12 +215,14 @@ workflow {
         EXTRACT_SINGLETONS.out.R1_paired_gz,
         EXTRACT_SINGLETONS.out.R2_paired_gz,
         EXTRACT_SINGLETONS.out.single_gz,
-        output_ch
+        output_ch,
+        INFILE_HANDLING.out.base
     )
 
     CLEANED_COVERAGE (
         CLEAN_READS.out.single_bam,
-        CLEAN_READS.out.paired_bam
+        CLEAN_READS.out.paired_bam,
+        INFILE_HANDLING.out.base
     )
 
     MLST (
@@ -223,37 +230,43 @@ workflow {
     )
 
     ANNOTATE (
-        CLEAN_READS.out.base_fna
+        CLEAN_READS.out.base_fna,
+        INFILE_HANDLING.out.base
     )
 
     EXTRACT_RECORDS (
         extract_record_ch,
-        ANNOTATE.out.annotation
+        ANNOTATE.out.annotation,
+        INFILE_HANDLING.out.base
     )
 
     BARRNAP (
         EXTRACT_RECORDS.out.extracted_rna,
         CLEAN_READS.out.base_fna,
-        ANNOTATE.out.annotation
+        ANNOTATE.out.annotation,
+        INFILE_HANDLING.out.base
     )
 
     BLAST (
         BARRNAP.out.extracted_base,
-        CLEAN_READS.out.base_fna
+        CLEAN_READS.out.base_fna,
+        INFILE_HANDLING.out.base
     )
 
     FILTER_BLAST (
         filter_blast_ch,
         BLAST.out.blast_tsv,
         CLEAN_READS.out.base_fna,
-        output_ch
+        output_ch,
+        INFILE_HANDLING.out.base
     )
 
     QA (
         CLEAN_READS.out.base_fna,
         EXTRACT_SINGLETONS.out.R1_paired_gz,
         EXTRACT_SINGLETONS.out.R2_paired_gz,
-        EXTRACT_SINGLETONS.out.single_gz
+        EXTRACT_SINGLETONS.out.single_gz,
+        INFILE_HANDLING.out.base
     )
 
     GENOME_COVERAGE (

@@ -1,5 +1,5 @@
 process FILTER_BLAST {
-    
+
     publishDir "${params.outpath}/ssu",
         mode: "${params.publish_dir_mode}",
         pattern: "*.tsv*"
@@ -18,6 +18,7 @@ process FILTER_BLAST {
         path blast_tsv
         path base_fna
         path outpath
+        val base
 
     output:
         path "Summary.16S.tab"
@@ -30,19 +31,16 @@ process FILTER_BLAST {
     '''
 
     source bash_functions.sh
-    
-    # Get basename of input file
-    base=$(basename "!{base_fna}" | cut -d . -f 1 | sed 's/[-.,]//g')
 
     python3 !{filter_blast} -i "!{blast_tsv}" \
-    -o "${base}.blast.tab"
+    -o "!{base}.blast.tab"
 
-    #verify_file_minimum_size "${base}.blast.tab" 'filtered 16S blastn nr file' '10c'
+    #verify_file_minimum_size "!{base}.blast.tab" 'filtered 16S blastn nr file' '10c'
 
-    awk -F $'\t' 'BEGIN{OFS=FS}; {print $1, $3 "% identity", $13 "% alignment", $14}' "${base}.blast.tab" \
-    > "${base}.16S-top-species.tsv"
+    awk -F $'\t' 'BEGIN{OFS=FS}; {print $1, $3 "% identity", $13 "% alignment", $14}' "!{base}.blast.tab" \
+    > "!{base}.16S-top-species.tsv"
 
-    cat "${base}.16S-top-species.tsv" >> "Summary.16S.tab"
+    cat "!{base}.16S-top-species.tsv" >> "Summary.16S.tab"
     gzip -f !{blast_tsv}
 
     '''

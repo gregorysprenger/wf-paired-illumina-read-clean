@@ -1,5 +1,5 @@
 process BLAST {
-    
+
     publishDir "${params.process_log_dir}",
         mode: "${params.publish_dir_mode}",
         pattern: ".command.*",
@@ -10,6 +10,7 @@ process BLAST {
     input:
         path extracted_base
         path base_fna
+        val base
 
     output:
         path "*.blast.tsv", emit: blast_tsv
@@ -22,9 +23,6 @@ process BLAST {
     source bash_functions.sh
 
     # Classify each 16S sequence record
-
-    # Get basename of input file
-    base=$(basename "!{base_fna}" | cut -d . -f 1 | sed 's/[-.,]//g')
 
     mkdir db
     cd db
@@ -40,10 +38,10 @@ process BLAST {
     blastn -word_size 10 -task blastn -db 16S_ribosomal_RNA \
     -num_threads "!{task.cpus}" \
     -query "!{extracted_base}" \
-    -out "${base}.blast.tsv" \
+    -out "!{base}.blast.tsv" \
     -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovhsp ssciname"
 
-    #verify_file_minimum_size "${base}.blast.tsv" '16S blastn nr output file' '10c'
+    #verify_file_minimum_size "!{base}.blast.tsv" '16S blastn nr output file' '10c'
 
     '''
 }

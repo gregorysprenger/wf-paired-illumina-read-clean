@@ -1,5 +1,5 @@
 process EXTRACT_RECORDS {
-    
+
     publishDir "${params.process_log_dir}",
         mode: "${params.publish_dir_mode}",
         pattern: ".command.*",
@@ -10,6 +10,7 @@ process EXTRACT_RECORDS {
     input:
         path extract_record
         path annotation
+        val base
 
     output:
         path "16S.*.fa", emit: extracted_rna
@@ -19,13 +20,10 @@ process EXTRACT_RECORDS {
     shell:
     '''
 
-    # Get basename of input file
-    base=$(basename "!{annotation}" | cut -d . -f 1 | sed 's/[-.,]//g')
-
     # 16S extraction
     if [[ -s "!{annotation}" ]]; then
         python3 !{extract_record} -i "!{annotation}" \
-        -u product -o "16S.${base}.fa" -q '16S ribosomal RNA' \
+        -u product -o "16S.!{base}.fa" -q '16S ribosomal RNA' \
         --search-type any_q_is_rec -f rRNA
     fi
 

@@ -32,9 +32,6 @@ process EXTRACT_SINGLETONS {
 
         source bash_functions.sh
 
-        # Get basename of input file
-        base=$(basename "!{input[0]}" | cut -d _ -f 1 | sed 's/[-.,]//g')
-
         # Determine read length based on the first 100 reads
         echo -e "$(zcat "!{input[0]}" | head -n 400 > read_R1_len.txt)"
         READ_LEN=$(awk 'NR%4==2 {if(length > x) {x=length; y=$0}} END{print length(y)}' read_R1_len.txt)
@@ -62,40 +59,40 @@ process EXTRACT_SINGLETONS {
             echo "INFO: Done verifying flash file size"
 
             rm !{R1_paired} !{R2_paired}
-            mv flash.notCombined_1.fastq ${base}_R1.paired.fq
-            mv flash.notCombined_2.fastq ${base}_R2.paired.fq
+            mv flash.notCombined_1.fastq !{base}_R1.paired.fq
+            mv flash.notCombined_2.fastq !{base}_R2.paired.fq
 
             if [ -f  flash.extendedFrags.fastq ] && \
                 [ -s  flash.extendedFrags.fastq ]; then
                 CNT_READS_OVERLAPPED=$(awk '{lines++} END{print lines/4}' \
                 flash.extendedFrags.fastq)
 
-                cat flash.extendedFrags.fastq >> ${base}_single.fq
+                cat flash.extendedFrags.fastq >> !{base}_single.fq
                 rm flash.extendedFrags.fastq
             fi
 
             echo "INFO: ${CNT_READS_OVERLAPPED:-0} pairs overlapped into singleton reads" >&2
-            echo -e "${base}\t${CNT_READS_OVERLAPPED:-0} reads Overlapped" \
-            > ${base}_overlap.tsv
+            echo -e "!{base}\t${CNT_READS_OVERLAPPED:-0} reads Overlapped" \
+            > !{base}_overlap.tsv
         fi
 
         # Summarize final read set and compress
 
-        count_R1=$(echo $(cat ${base}_R1.paired.fq | wc -l))
+        count_R1=$(echo $(cat !{base}_R1.paired.fq | wc -l))
         CNT_CLEANED_PAIRS=$(echo $((${count_R1}/4)))
         echo "INFO: CNT_CLEANED_PAIRS ${CNT_CLEANED_PAIRS}"
 
-        count_single=$(echo $(cat ${base}_single.fq | wc -l))
+        count_single=$(echo $(cat !{base}_single.fq | wc -l))
         CNT_CLEANED_SINGLETON=$(echo $((${count_single}/4)))
         echo "INFO: CNT_CLEANED_SINGLETON ${CNT_CLEANED_SINGLETON}"
         
 
-        echo -e "${base}\t${CNT_CLEANED_PAIRS} cleaned pairs\t${CNT_CLEANED_SINGLETON} cleaned singletons" \
-        > ${base}_clean-reads.tsv
+        echo -e "!{base}\t${CNT_CLEANED_PAIRS} cleaned pairs\t${CNT_CLEANED_SINGLETON} cleaned singletons" \
+        > !{base}_clean-reads.tsv
 
-        gzip ${base}_single.fq\
-        ${base}_R1.paired.fq\
-        ${base}_R2.paired.fq
+        gzip !{base}_single.fq\
+        !{base}_R1.paired.fq\
+        !{base}_R2.paired.fq
 
         '''
 }

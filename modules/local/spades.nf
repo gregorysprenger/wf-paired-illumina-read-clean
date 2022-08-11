@@ -17,6 +17,7 @@ process SPADES {
         path R2_paired_gz
         path single_gz
         path outpath
+        val base
 
     output:
         path "spades/"
@@ -26,15 +27,11 @@ process SPADES {
 
     shell:
     '''
-    
-    source bash_functions.sh
 
-    # Get basename of input file
-    base=$(basename "!{R1_paired_gz}" | cut -d _ -f 1 | sed 's/[-.,]//g')
+    source bash_functions.sh
 
     # Assemble with SPAdes
     failed=0
-    NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
 
     echo "INFO: Starting SPades"
 
@@ -42,10 +39,10 @@ process SPADES {
         RAMSIZE_TOT=$(free --giga | grep '^Mem:' | awk '{print int($2*0.8)}')
         echo "INFO: RAMSIZE = ${RAMSIZE_TOT}"
         if [ ${failed} -gt 0 ]; then
-            echo "ERROR: assembly file not produced by SPAdes for ${base}" >&2
+            echo "ERROR: assembly file not produced by SPAdes for !{base}" >&2
             mv -f tmp/spades.log \
             tmp/"${failed}"of3-asm-attempt-failed.spades.log 2> /dev/null
-            echo "INFO: SPAdes failure ${failed}; retrying assembly for ${base}" >&2
+            echo "INFO: SPAdes failure ${failed}; retrying assembly for !{base}" >&2
             spades.py --restart-from last -o tmp -t !{task.cpus} >&2
         else
             spades.py --pe1-1 !{R1_paired_gz}\
@@ -68,13 +65,13 @@ process SPADES {
     fi
 
     echo "INFO: Verify files"
-    if [[ $(find -L !{outpath}/asm/${base}.fna -type f -size +2M 2> /dev/null) ]] && \
-    [ -s !{outpath}/asm/${base}.InDels-corrected.cnt.txt ] && \
-    [ -s !{outpath}/asm/${base}.SNPs-corrected.cnt.txt ] && \
-    $(grep -P -q "^${base}\t" !{outpath}/qa/Summary.Illumina.CleanedReads-AlnStats.tab) && \
-    $(grep -P -q "!{outpath}/asm/${base}.fna\t" !{outpath}/qa/Summary.MLST.tab) && \
-    [[ $(find -L !{outpath}/annot/${base}.gbk -type f -size +3M 2> /dev/null) ]]; then
-        echo "INFO: found polished assembly for ${base}" >&2
+    if [[ $(find -L !{outpath}/asm/!{base}.fna -type f -size +2M 2> /dev/null) ]] && \
+    [ -s !{outpath}/asm/!{base}.InDels-corrected.cnt.txt ] && \
+    [ -s !{outpath}/asm/!{base}.SNPs-corrected.cnt.txt ] && \
+    $(grep -P -q "^!{base}\t" !{outpath}/qa/Summary.Illumina.CleanedReads-AlnStats.tab) && \
+    $(grep -P -q "!{outpath}/asm/!{base}.fna\t" !{outpath}/qa/Summary.MLST.tab) && \
+    [[ $(find -L !{outpath}/annot/!{base}.gbk -type f -size +3M 2> /dev/null) ]]; then
+        echo "INFO: found polished assembly for !{base}" >&2
         exit 0
     fi
 

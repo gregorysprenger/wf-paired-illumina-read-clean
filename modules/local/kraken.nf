@@ -16,6 +16,7 @@ process KRAKEN_ONE {
         path R1_paired_gz
         path R2_paired_gz
         path single_gz
+        val base
 
     output:
         path "*taxonomy-reads.tab"
@@ -28,29 +29,26 @@ process KRAKEN_ONE {
 
     source summarize_kraken.sh
 
-    # Get basename of input file
-    base=$(basename "!{R1_paired_gz}" | cut -d _ -f 1 | sed 's/[-.,]//g')
-
     # Investigate taxonomic identity of cleaned reads
-    if [ ! -s ${base}_taxonomy-reads.tab ]; then
+    if [ ! -s !{base}_taxonomy-reads.tab ]; then
 
         NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
         echo "INFO: Number of threads found: !{task.cpus}"
 
         echo "INFO: Starting Kraken1"
         kraken --db /kraken-database/minikraken_20171013_4GB --threads !{task.cpus} --fastq-input --gzip-compressed \
-        !{R1_paired_gz} !{R2_paired_gz} !{single_gz} > ${base}_kraken.output
+        !{R1_paired_gz} !{R2_paired_gz} !{single_gz} > !{base}_kraken.output
 
         echo "INFO: Run kraken-report"
-        kraken-report --db /kraken-database/minikraken_20171013_4GB ${base}_kraken.output > kraken.tab 2>&1 | tr '^M' '\n' 1>&2
+        kraken-report --db /kraken-database/minikraken_20171013_4GB !{base}_kraken.output > kraken.tab 2>&1 | tr '^M' '\n' 1>&2
         echo "INFO: Kraken1 finished"
 
         echo "INFO: Summarize Kraken1"
-        summarize_kraken 'kraken.tab' > ${base}_taxonomy-reads.tab
+        summarize_kraken 'kraken.tab' > !{base}_taxonomy-reads.tab
 
         echo "INFO: gzip kraken1"
-        mv kraken.tab ${base}_kraken.tab
-        gzip ${base}_kraken.tab
+        mv kraken.tab !{base}_kraken.tab
+        gzip !{base}_kraken.tab
     fi
 
     '''
@@ -74,6 +72,7 @@ process KRAKEN_TWO {
         path R1_paired_gz
         path R2_paired_gz
         path single_gz
+        val base
 
     output:
         path "*taxonomy2-reads.tab"
@@ -84,10 +83,7 @@ process KRAKEN_TWO {
 
     source summarize_kraken.sh
 
-    # Get basename of input file
-    base=$(basename "!{R1_paired_gz}" | cut -d _ -f 1 | sed 's/[-.,]//g')
-
-    if [ ! -s ${base}_taxonomy2-reads.tab ]; then
+    if [ ! -s !{base}_taxonomy2-reads.tab ]; then
 
         NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
         echo "INFO: Number of threads found: !{task.cpus}"
@@ -99,11 +95,11 @@ process KRAKEN_TWO {
         echo "INFO: Kraken2 finished"
 
         echo "INFO: Summarize kraken2"
-        summarize_kraken 'kraken2.tab' > ${base}_taxonomy2-reads.tab
+        summarize_kraken 'kraken2.tab' > !{base}_taxonomy2-reads.tab
 
         echo "INFO: gzip kraken2"
-        mv kraken2.tab ${base}_kraken2.tab
-        gzip ${base}_kraken2.tab
+        mv kraken2.tab !{base}_kraken2.tab
+        gzip !{base}_kraken2.tab
 
     fi
     

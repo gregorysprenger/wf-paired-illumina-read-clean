@@ -1,5 +1,5 @@
 process CLEANED_COVERAGE {
-    
+
     publishDir "${params.outpath}/qa",
         mode: "${params.publish_dir_mode}",
         pattern: "*.tab"
@@ -13,6 +13,7 @@ process CLEANED_COVERAGE {
     input:
         path single_bam
         path paired_bam
+        val base
 
     output:
         path "Summary.Illumina.CleanedReads-AlnStats.tab", emit: summary_stats
@@ -24,20 +25,17 @@ process CLEANED_COVERAGE {
 
     # Calculate coverage
 
-    # Get basename of input file
-    base=$(basename "!{single_bam}" | cut -d . -f 1 | sed 's/[-.,]//g')
-
     single_cov='0 bp TooFewToMap Singleton Reads (0.0x)\t'
     if [ -s !{single_bam} ]; then
         single_cov=$(bedtools genomecov -d -split -ibam !{single_bam} |\
         awk '{sum+=$3} END{print sum " bp Singleton Reads Mapped (" sum/NR "x)\t"}')
     fi
 
-    cov_nfo=$(bedtools genomecov -d -split -ibam ${base}.paired.bam |\
+    cov_nfo=$(bedtools genomecov -d -split -ibam !{base}.paired.bam |\
     awk -v SEcov="${single_cov}" 'BEGIN{sum=0} {sum+=$3} END{
     print sum " bp Paired Reads Mapped (" sum/NR "x)\t" SEcov NR " bp Genome"}')
 
-    echo -e "${base}\t${cov_nfo}" >> \
+    echo -e "!{base}\t${cov_nfo}" >> \
     Summary.Illumina.CleanedReads-AlnStats.tab
     
     '''

@@ -15,6 +15,7 @@ process TRIMMOMATIC {
         path noPhiX_R1
         path noPhiX_R2
         path outpath
+        val base
 
     output:
         path "*R1.paired.fq", emit: R1_paired
@@ -29,9 +30,6 @@ process TRIMMOMATIC {
 
     source bash_functions.sh
 
-    # Get basename of input file
-    base=$(basename "!{noPhiX_R1}" | cut -d _ -f 1 | sed 's/[-.,]//g')
-
     # Adapter clip and quality trim
     if ! verify_file_minimum_size !{ADAPTERS} 'adapters' '10k'; then
         echo "ERROR: Adapters file is too small" >&2
@@ -39,14 +37,12 @@ process TRIMMOMATIC {
     fi
 
     echo "INFO: Starting trimmomatic"
+    echo "INFO: Number of threads found: !{task.cpus}"
 
-    NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
-    echo "INFO: Number of threads found: ${NSLOTS}"
-
-    trimmomatic PE -phred33 -threads ${NSLOTS}\
+    trimmomatic PE -phred33 -threads !{task.cpus}\
     !{noPhiX_R1} !{noPhiX_R2}\
-    ${base}_R1.paired.fq ${base}_R1.unpaired.fq\
-    ${base}_R2.paired.fq ${base}_R2.unpaired.fq\
+    !{base}_R1.paired.fq !{base}_R1.unpaired.fq\
+    !{base}_R2.paired.fq !{base}_R2.unpaired.fq\
     ILLUMINACLIP:!{ADAPTERS}:2:20:10:8:TRUE\
     SLIDINGWINDOW:6:30 LEADING:10 TRAILING:10 MINLEN:50
 
@@ -58,9 +54,9 @@ process TRIMMOMATIC {
     echo "INFO: $TRIMMO_DISCARD reads are poor quality and were discarded" >&2
 
     CNT_BROKEN_R1=$(awk '{lines++} END{print lines/4}' \
-    ${base}_R1.unpaired.fq)
+    !{base}_R1.unpaired.fq)
     CNT_BROKEN_R2=$(awk '{lines++} END{print lines/4}' \
-    ${base}_R2.unpaired.fq)
+    !{base}_R2.unpaired.fq)
 
     if [[ -z "${TRIMMO_DISCARD}" || -z "${CNT_BROKEN_R1}" || -z "${CNT_BROKEN_R2}" ]]; then
         echo 'ERROR: unable to parse discarded read counts from trimmomatic log' >&2
@@ -73,16 +69,16 @@ process TRIMMOMATIC {
     echo "INFO: $CNT_BROKEN_R2 reverse reads lacked a high quality R1 sister read" >&2
     echo "INFO: $CNT_BROKEN total broken read pairs were saved as singletons" >&2
     
-    echo -e "${base}\t${TRIMMO_DISCARD} reads Discarded\t${CNT_BROKEN} reads Singletons" \
-    > ${base}_trimmo.tsv
+    echo -e "!{base}\t${TRIMMO_DISCARD} reads Discarded\t${CNT_BROKEN} reads Singletons" \
+    > !{base}_trimmo.tsv
 
-    cat ${base}_R1.unpaired.fq ${base}_R2.unpaired.fq > ${base}_single.fq
+    cat !{base}_R1.unpaired.fq !{base}_R2.unpaired.fq > !{base}_single.fq
 
-    rm -f ${base}_R1.unpaired.fq ${base}_R2.unpaired.fq
+    rm -f !{base}_R1.unpaired.fq !{base}_R2.unpaired.fq
 
     for suff in R1.paired.fq R2.paired.fq ; do
-        verify_file_minimum_size "${base}_${suff}" 'cleaned read' '10M' #25
+        verify_file_minimum_size "!{base}_${suff}" 'cleaned read' '10M' #25
     done
-    
+
     '''
 }
