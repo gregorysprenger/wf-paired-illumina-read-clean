@@ -1,5 +1,5 @@
 process EXTRACT_SINGLETONS {
-    
+
     publishDir "${params.outpath}/trim_reads",
         mode: "${params.publish_dir_mode}",
         pattern: "*"
@@ -13,7 +13,8 @@ process EXTRACT_SINGLETONS {
     container "snads/flash@sha256:363b2f44d040c669191efbc3d3ba99caf5efd3fdef370af8f00f3328932143a6"
 
     input:
-        path R1
+        path input
+        val base
         path R1_paired
         path R2_paired
 
@@ -32,10 +33,10 @@ process EXTRACT_SINGLETONS {
         source bash_functions.sh
 
         # Get basename of input file
-        base=$(basename "!{R1}" | cut -d _ -f 1 | sed 's/[-.,]//g')
+        base=$(basename "!{input[0]}" | cut -d _ -f 1 | sed 's/[-.,]//g')
 
         # Determine read length based on the first 100 reads
-        echo -e "$(zcat "!{R1}" | head -n 400 > read_R1_len.txt)"
+        echo -e "$(zcat "!{input[0]}" | head -n 400 > read_R1_len.txt)"
         READ_LEN=$(awk 'NR%4==2 {if(length > x) {x=length; y=$0}} END{print length(y)}' read_R1_len.txt)
 
         echo "INFO: ${READ_LEN} bp read length detected from raw input" >&2

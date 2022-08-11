@@ -6,11 +6,11 @@ process INFILE_HANDLING {
         saveAs: { filename -> "${task.process}${filename}" }
 
     input:
-        path input
+        tuple val(basename), path(input)
 
     output:
-        path "*R1*", emit: R1
-        path "*R2*", emit: R2
+        path input, emit: input
+        val basename, emit: base
         path ".command.out"
         path ".command.err"
         
@@ -19,18 +19,11 @@ process INFILE_HANDLING {
 
         source bash_functions.sh
         
-        shopt -s nullglob
-        R1=( "!{input}"/*_R1*{fq,fastq}.gz )
-        R2=( "!{input}"/*_R2*{fq,fastq}.gz )
-        echo "INFO: ${R1} found"
-        echo "INFO: ${R2} found"
-        shopt -u nullglob
+        echo "INFO: R1 = !{input[0]}"
+        echo "INFO: R2 = !{input[1]}"
 
-        verify_file_minimum_size ${R1} 'fastq' '10M'
-        verify_file_minimum_size ${R2} 'fastq' '10M'
-    
-        cp ${R1} .
-        cp ${R2} .
-        
+        verify_file_minimum_size !{input[0]} 'fastq' '10M'
+        verify_file_minimum_size !{input[1]} 'fastq' '10M'
+
         '''
 }

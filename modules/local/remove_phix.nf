@@ -14,8 +14,8 @@ process REMOVE_PHIX {
     
     input:
         path PHIX
-        path R1
-        path R2
+        path input
+        val base
 
     output:
         path "*noPhiX-R1.fsq", emit: noPhiX_R1
@@ -31,7 +31,7 @@ process REMOVE_PHIX {
     source bash_functions.sh
 
     # Get basename of input file
-    base=$(basename "!{R1}" | cut -d _ -f 1 | sed 's/[-.,]//g')
+    base=$(basename "!{input[0]}" | cut -d _ -f 1 | sed 's/[-.,]//g')
     
     # Remove PhiX
     if ! verify_file_minimum_size !{PHIX} 'PhiX genome' '5k'; then
@@ -45,7 +45,7 @@ process REMOVE_PHIX {
     echo "INFO: Number of threads found: !{task.cpus}"
 
     bbduk.sh threads=!{task.cpus} k=31 hdist=1\
-    ref="!{PHIX}" in="!{R1}" in2="!{R2}"\
+    ref="!{PHIX}" in="!{input[0]}" in2="!{input[1]}"\
     out=${base}_noPhiX-R1.fsq out2=${base}_noPhiX-R2.fsq\
     qin=auto qout=33 overwrite=t
 
