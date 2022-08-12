@@ -15,6 +15,7 @@ process ANNOTATE {
     input:
         path base_fna
         val base
+        val size
         
     output:
         path "*.gbk", emit: annotation
@@ -35,12 +36,14 @@ process ANNOTATE {
 
     for ext in gb gbf gbff gbk ; do
     if [ -s "prokka/!{base}.${ext}" ]; then
-        verify_file_minimum_size "!{base}.${ext}" 'annotated assembly' '3M'
+
         mv -f prokka/!{base}.${ext} !{base}.gbk
         rm -rf !{base}
         break
     fi
     done
-
+    
+    minimum_size=$(( !{size}/100 ))
+    verify_file_minimum_size "!{base}.${ext}" 'annotated assembly' ${minimum_size}c
     '''
 }

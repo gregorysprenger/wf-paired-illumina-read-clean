@@ -18,6 +18,7 @@ process SPADES {
         path single_gz
         path outpath
         val base
+        val size
 
     output:
         path "spades/"
@@ -56,7 +57,7 @@ process SPADES {
     done
 
     echo "INFO: SPAdes finished"
-
+    minimum_size=$(( !{size}/200 ))
     verify_file_minimum_size "tmp/contigs.fasta" 'SPAdes output assembly' '1M'
     if grep -E -q 'N{60}' "tmp/contigs.fasta"; then
         # avoid this again: https://github.com/ablab/spades/issues/273

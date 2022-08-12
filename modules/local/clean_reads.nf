@@ -39,7 +39,8 @@ process CLEAN_READS {
     source bash_functions.sh
 
     # Correct cleaned SPAdes contigs with cleaned PE reads
-    verify_file_minimum_size "!{uncorrected_contigs}" 'filtered SPAdes assembly' '1M'
+    minimum_size=$(( !{size}/200 ))
+    verify_file_minimum_size "!{uncorrected_contigs}" 'filtered SPAdes assembly' ${minimum_size}c
 
     echo -n '' > !{base}.InDels-corrected.cnt.txt
     echo -n '' > !{base}.SNPs-corrected.cnt.txt
@@ -54,8 +55,8 @@ process CLEAN_READS {
         samtools sort -@ !{task.cpus} --reference !{uncorrected_contigs} -l 9\
         -o !{base}.paired.bam
 
-        minimum_size=$(( !{size}/120 ))
-        verify_file_minimum_size "!{base}.paired.bam" 'binary sequence alignment map' ${minimum_size}c
+        minimum_size_large=$(( !{size}/120 ))
+        verify_file_minimum_size "!{base}.paired.bam" 'binary sequence alignment map' ${minimum_size_large}c
 
         samtools index !{base}.paired.bam
 
@@ -63,7 +64,7 @@ process CLEAN_READS {
         --output "!{base}" --changes \
         --fix snps,indels --mindepth 0.50 --threads !{task.cpus} >&2
 
-        verify_file_minimum_size "!{uncorrected_contigs}" 'polished assembly' '1M'
+        verify_file_minimum_size "!{uncorrected_contigs}" 'polished assembly' ${minimum_size}c
 
         echo $(grep -c '-' !{base}.changes >> !{base}.InDels-corrected.cnt.txt)
         echo $(grep -vc '-' !{base}.changes >> !{base}.SNPs-corrected.cnt.txt)
@@ -78,7 +79,7 @@ process CLEAN_READS {
 
     mv -f !{base}.uncorrected.fna !{base}.fna
 
-    verify_file_minimum_size "!{base}.fna" 'corrected SPAdes assembly' '1M'
+    verify_file_minimum_size "!{base}.fna" 'corrected SPAdes assembly' ${minimum_size}c
 
     # Single read mapping if available
     if [[ !{single_gz} ]]; then
