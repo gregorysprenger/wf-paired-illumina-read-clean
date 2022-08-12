@@ -33,10 +33,10 @@ process SPADES {
     # Assemble with SPAdes
     failed=0
 
-    echo "INFO: Starting SPades"
+    echo "INFO: Starting SPAdes"
 
     while [[ ! -f tmp/contigs.fasta ]] && [ ${failed} -lt 2 ]; do
-        RAMSIZE_TOT=$(free --giga | grep '^Mem:' | awk '{print int($2*0.8)}')
+        RAMSIZE_TOT=$(echo !{task.memory} | cut -d ' ' -f 1)
         echo "INFO: RAMSIZE = ${RAMSIZE_TOT}"
         if [ ${failed} -gt 0 ]; then
             echo "ERROR: assembly file not produced by SPAdes for !{base}" >&2
@@ -52,7 +52,7 @@ process SPADES {
             -o tmp --phred-offset 33\
             -t !{task.cpus} --only-assembler >&2
         fi
-        failed=$((${failed}+1))
+        failed=$(( ${failed}+1 ))
     done
 
     echo "INFO: SPAdes finished"
