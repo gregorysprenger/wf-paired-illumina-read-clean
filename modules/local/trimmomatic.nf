@@ -16,6 +16,7 @@ process TRIMMOMATIC {
         path noPhiX_R2
         path outpath
         val base
+        val size
 
     output:
         path "*R1.paired.fq", emit: R1_paired
@@ -76,8 +77,9 @@ process TRIMMOMATIC {
 
     rm -f !{base}_R1.unpaired.fq !{base}_R2.unpaired.fq
 
+    minimum_size=$(( !{size}/120 ))
     for suff in R1.paired.fq R2.paired.fq ; do
-        verify_file_minimum_size "!{base}_${suff}" 'cleaned read' '10M' #25
+        verify_file_minimum_size "!{base}_${suff}" 'cleaned read' ${minimum_size}c
     done
 
     '''

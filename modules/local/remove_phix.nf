@@ -16,6 +16,7 @@ process REMOVE_PHIX {
         path PHIX
         path input
         val base
+        val size
 
     output:
         path "*noPhiX-R1.fsq", emit: noPhiX_R1
@@ -29,9 +30,6 @@ process REMOVE_PHIX {
     '''
 
     source bash_functions.sh
-
-    # Get basename of input file
-    base=$(basename "!{input[0]}" | cut -d _ -f 1 | sed 's/[-.,]//g')
     
     # Remove PhiX
     if ! verify_file_minimum_size !{PHIX} 'PhiX genome' '5k'; then
@@ -40,19 +38,17 @@ process REMOVE_PHIX {
     fi
 
     echo "INFO: Starting bbduck"
-
-    NSLOTS=$(cat /sys/devices/system/cpu/present | cut -d '-' -f2)
     echo "INFO: Number of threads found: !{task.cpus}"
 
     bbduk.sh threads=!{task.cpus} k=31 hdist=1\
     ref="!{PHIX}" in="!{input[0]}" in2="!{input[1]}"\
-    out=${base}_noPhiX-R1.fsq out2=${base}_noPhiX-R2.fsq\
+    out=!{base}_noPhiX-R1.fsq out2=!{base}_noPhiX-R2.fsq\
     qin=auto qout=33 overwrite=t
-
     echo "INFO: bbduck finished"
 
+    minimum_size=$(( !{size}/120 ))
     for suff in R1.fsq R2.fsq ; do
-        verify_file_minimum_size "${base}_noPhiX-${suff}" 'PhiX cleaned read' '25M'
+        verify_file_minimum_size "!{base}_noPhiX-${suff}" 'PhiX cleaned read' ${minimum_size}c
     done
 
     TOT_READS=$(grep '^Input: ' .command.err \
@@ -70,13 +66,13 @@ process REMOVE_PHIX {
     PHIX_BASES=$(grep '^Contaminants: ' .command.err \
     | awk '{print $5}' | sed 's/,//g')
 
-    echo "INFO: $TOT_BASES bp and $TOT_READS reads provided as raw input" >&2
-    echo "INFO: ${PHIX_BASES:-0} bp of PhiX were detected and removed in ${PHIX_READS:-0} reads" >&2
+    echo "INFO: ${TOT_BASES} bp and $TOT_READS reads provided as raw input"
+    echo "INFO: ${PHIX_BASES:-0} bp of PhiX were detected and removed in ${PHIX_READS:-0} reads"
 
-    echo -e "${base}\t${TOT_BASES} bp Raw\t${TOT_READS} reads Raw" \
-    > ${base}_raw.tsv
-    echo -e "${base}\t${PHIX_BASES:-0} bp PhiX\t${PHIX_READS:-0} reads PhiX" \
-    > ${base}_phix.tsv
+    echo -e "!{base}\t${TOT_BASES} bp Raw\t${TOT_READS} reads Raw" \
+    > !{base}_raw.tsv
+    echo -e "!{base}\t${PHIX_BASES:-0} bp PhiX\t${PHIX_READS:-0} reads PhiX" \
+    > !{base}_phix.tsv
 
     '''
 }

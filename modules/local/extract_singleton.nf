@@ -14,9 +14,10 @@ process EXTRACT_SINGLETONS {
 
     input:
         path input
-        val base
         path R1_paired
         path R2_paired
+        val base
+        val size
 
     output:
         path "*R1.paired.fq.gz", emit: R1_paired_gz
@@ -52,8 +53,9 @@ process EXTRACT_SINGLETONS {
             echo "INFO: Finished running flash"
 
             echo "INFO: Verify flash file size"
+            minimum_size=$(( !{size}/150 ))
             for suff in flash.notCombined_1.fastq flash.notCombined_2.fastq ; do
-                verify_file_minimum_size "${suff}" 'cleaned non-overlapping read' '1M' #20
+                verify_file_minimum_size "${suff}" 'cleaned non-overlapping read' ${minimum_size}c
             done
             echo "INFO: Done verifying flash file size"
 

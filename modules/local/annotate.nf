@@ -35,7 +35,7 @@ process ANNOTATE {
 
     for ext in gb gbf gbff gbk ; do
     if [ -s "prokka/!{base}.${ext}" ]; then
-        #verify_file_minimum_size "!{base}.${ext}" 'annotated assembly' '3M'
+        verify_file_minimum_size "!{base}.${ext}" 'annotated assembly' '3M'
         mv -f prokka/!{base}.${ext} !{base}.gbk
         rm -rf !{base}
         break

@@ -43,14 +43,14 @@ process BARRNAP {
         fi
     fi
 
-    #verify_file_minimum_size "16S.!{base}.fa" '16S extracted FastA file' '500c'
+    verify_file_minimum_size "16S.!{base}.fa" '16S extracted FastA file' '500c'
 
     awk -v awk_var="!{base}" '/^>/{print ">" awk_var "_" ++i; next} {print}' \
     16S.!{base}.fa > !{base}.fa-renamed
     rm -f 16S.!{base}.fa
     mv -f !{base}.fa-renamed 16s.!{base}.fa
 
-    #verify_file_minimum_size "16s.!{base}.fa" '16S extracted and renamed FastA file' '500c'
+    verify_file_minimum_size "16s.!{base}.fa" '16S extracted and renamed FastA file' '500c'
 
     '''
 }

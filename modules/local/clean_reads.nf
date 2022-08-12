@@ -22,6 +22,7 @@ process CLEAN_READS {
         path single_gz
         path outpath
         val base
+        val size
 
     output:
         path "*.InDels-corrected.cnt.txt"
@@ -38,7 +39,7 @@ process CLEAN_READS {
     source bash_functions.sh
 
     # Correct cleaned SPAdes contigs with cleaned PE reads
-    #verify_file_minimum_size "!{uncorrected_contigs}" 'filtered SPAdes assembly' '1k' #1M
+    verify_file_minimum_size "!{uncorrected_contigs}" 'filtered SPAdes assembly' '1M'
 
     echo -n '' > !{base}.InDels-corrected.cnt.txt
     echo -n '' > !{base}.SNPs-corrected.cnt.txt
@@ -53,7 +54,8 @@ process CLEAN_READS {
         samtools sort -@ !{task.cpus} --reference !{uncorrected_contigs} -l 9\
         -o !{base}.paired.bam
 
-        #verify_file_minimum_size "!{base}.paired.bam" 'binary sequence alignment map' '1M' #25M
+        minimum_size=$(( !{size}/120 ))
+        verify_file_minimum_size "!{base}.paired.bam" 'binary sequence alignment map' ${minimum_size}c
 
         samtools index !{base}.paired.bam
 
@@ -61,7 +63,7 @@ process CLEAN_READS {
         --output "!{base}" --changes \
         --fix snps,indels --mindepth 0.50 --threads !{task.cpus} >&2
 
-        #verify_file_minimum_size "!{uncorrected_contigs}" 'polished assembly' '1K' #1M
+        verify_file_minimum_size "!{uncorrected_contigs}" 'polished assembly' '1M'
 
         echo $(grep -c '-' !{base}.changes >> !{base}.InDels-corrected.cnt.txt)
         echo $(grep -vc '-' !{base}.changes >> !{base}.SNPs-corrected.cnt.txt)
@@ -76,7 +78,7 @@ process CLEAN_READS {
 
     mv -f !{base}.uncorrected.fna !{base}.fna
 
-    #verify_file_minimum_size "!{base}.fna" 'corrected SPAdes assembly' '1k' #1M
+    verify_file_minimum_size "!{base}.fna" 'corrected SPAdes assembly' '1M'
 
     # Single read mapping if available
     if [[ !{single_gz} ]]; then
@@ -87,7 +89,7 @@ process CLEAN_READS {
         samtools sort -@ !{task.cpus} --reference !{base}.fna -l 9\
         -o !{base}.single.bam
 
-        #verify_file_minimum_size "!{base}.single.bam" 'binary sequence alignment map' '1k'
+        verify_file_minimum_size "!{base}.single.bam" 'binary sequence alignment map' '1k'
         samtools index !{base}.single.bam
 
     fi

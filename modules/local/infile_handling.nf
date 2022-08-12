@@ -11,10 +11,12 @@ process INFILE_HANDLING {
     output:
         path input, emit: input
         val basename, emit: base
+        val size, emit: size
         path ".command.out"
         path ".command.err"
         
     shell:
+        size=input[0].size()
         '''
 
         source bash_functions.sh

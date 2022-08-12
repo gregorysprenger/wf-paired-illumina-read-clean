@@ -162,7 +162,8 @@ workflow {
     REMOVE_PHIX (
         phix_ch,
         INFILE_HANDLING.out.input,
-        INFILE_HANDLING.out.base
+        INFILE_HANDLING.out.base,
+        INFILE_HANDLING.out.size
     )
 
     TRIMMOMATIC (
@@ -170,14 +171,16 @@ workflow {
         REMOVE_PHIX.out.noPhiX_R1,
         REMOVE_PHIX.out.noPhiX_R2,
         output_ch,
-        INFILE_HANDLING.out.base
+        INFILE_HANDLING.out.base,
+        INFILE_HANDLING.out.size
     )
 
     EXTRACT_SINGLETONS (
         INFILE_HANDLING.out.input,
-        INFILE_HANDLING.out.base,
         TRIMMOMATIC.out.R1_paired,
-        TRIMMOMATIC.out.R2_paired
+        TRIMMOMATIC.out.R2_paired,
+        INFILE_HANDLING.out.base,
+        INFILE_HANDLING.out.size
     )
 
     KRAKEN_ONE (
@@ -216,7 +219,8 @@ workflow {
         EXTRACT_SINGLETONS.out.R2_paired_gz,
         EXTRACT_SINGLETONS.out.single_gz,
         output_ch,
-        INFILE_HANDLING.out.base
+        INFILE_HANDLING.out.base,
+        INFILE_HANDLING.out.size
     )
 
     CLEANED_COVERAGE (
