@@ -21,9 +21,10 @@ def helpMessage() {
     nextflow run main.nf -profile test,<docker|singularity> --outpath results
     
     Input/output options:
-      --inpath             Path to input data directory containing FastA assemblies. Recognized extensions are:  fa, fasta, fas, fna, fsa, fa.gz, fasta.gz, fas.gz, fna.gz, fsa.gz.
+      --inpath             Path to input data directory containing FastQ assemblies. Recognized extensions are:  fastq.gz, fq.gz.
       --outpath            The output directory where the results will be saved.
     Analysis options:
+      --size               Specify file size that is used to verify minimum file sizes in all processes, e.g. 1000.
       --bigdata            Whether or not to use more compute resources. Options are true, false (default).
       --max_memory         Specify memory limit on your machine/infrastructure, e.g. '128.GB'. Useful to ensure workflow doesn't request too many resources.
       --max_time           Specify time limit for each process, e.g. '240.h'. Useful to ensure workflow doesn't request too many resources.
