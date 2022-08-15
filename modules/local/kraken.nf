@@ -25,32 +25,38 @@ process KRAKEN_ONE {
         path ".command.err"
 
     shell:
-    '''
+        '''
 
-    source summarize_kraken.sh
+        source summarize_kraken.sh
 
-    # Investigate taxonomic identity of cleaned reads
-    if [ ! -s !{base}_taxonomy-reads.tab ]; then
+        # Investigate taxonomic identity of cleaned reads
+        if [ ! -s !{base}_taxonomy-reads.tab ]; then
 
-        echo "INFO: Number of threads found: !{task.cpus}"
+            echo "INFO: Number of threads found: !{task.cpus}"
 
-        echo "INFO: Starting Kraken1"
-        kraken --db /kraken-database/minikraken_20171013_4GB --threads !{task.cpus} --fastq-input --gzip-compressed \
-        !{R1_paired_gz} !{R2_paired_gz} !{single_gz} > !{base}_kraken.output
+            echo "INFO: Starting Kraken1"
+            kraken --db /kraken-database/minikraken_20171013_4GB --threads !{task.cpus} --fastq-input --gzip-compressed \
+            !{R1_paired_gz} !{R2_paired_gz} !{single_gz} > !{base}_kraken.output
 
-        echo "INFO: Run kraken-report"
-        kraken-report --db /kraken-database/minikraken_20171013_4GB !{base}_kraken.output > kraken.tab 2>&1 | tr '^M' '\n' 1>&2
-        echo "INFO: Kraken1 finished"
+            echo "INFO: Run kraken-report"
+            kraken-report --db /kraken-database/minikraken_20171013_4GB !{base}_kraken.output > kraken.tab 2>&1 | tr '^M' '\n' 1>&2
+            echo "INFO: Kraken1 finished"
 
-        echo "INFO: Summarize Kraken1"
-        summarize_kraken 'kraken.tab' > !{base}_taxonomy-reads.tab
+            echo "INFO: Summarize Kraken1"
+            summarize_kraken 'kraken.tab' > !{base}_taxonomy-reads.tab
 
-        echo "INFO: gzip kraken1"
-        mv kraken.tab !{base}_kraken.tab
-        gzip !{base}_kraken.tab
-    fi
+            echo "INFO: gzip kraken1"
+            mv kraken.tab !{base}_kraken.tab
+            gzip !{base}_kraken.tab
+        fi
 
-    '''
+        # Get process version
+        cat <<-END_VERSIONS > versions.yml
+        "!{task.process}":
+            kraken: $(kraken --version | head -n 1 | awk 'NF>1{print $NF}')
+        END_VERSIONS
+
+        '''
 }
 
 process KRAKEN_TWO {
@@ -78,27 +84,33 @@ process KRAKEN_TWO {
         path "*kraken2.tab.gz"
 
     shell:
-    '''
+        '''
 
-    source summarize_kraken.sh
+        source summarize_kraken.sh
 
-    if [ ! -s !{base}_taxonomy2-reads.tab ]; then
-        echo "INFO: Number of threads found: !{task.cpus}"
+        if [ ! -s !{base}_taxonomy2-reads.tab ]; then
+            echo "INFO: Number of threads found: !{task.cpus}"
 
-        echo "INFO: Starting Kraken2"
-        kraken2 --db /kraken2-db --threads !{task.cpus} --gzip-compressed --output /dev/null \
-        --use-names --report kraken2.tab \
-        !{R1_paired_gz} !{R2_paired_gz} !{single_gz}
-        echo "INFO: Kraken2 finished"
+            echo "INFO: Starting Kraken2"
+            kraken2 --db /kraken2-db --threads !{task.cpus} --gzip-compressed --output /dev/null \
+            --use-names --report kraken2.tab \
+            !{R1_paired_gz} !{R2_paired_gz} !{single_gz}
+            echo "INFO: Kraken2 finished"
 
-        echo "INFO: Summarize kraken2"
-        summarize_kraken 'kraken2.tab' > !{base}_taxonomy2-reads.tab
+            echo "INFO: Summarize kraken2"
+            summarize_kraken 'kraken2.tab' > !{base}_taxonomy2-reads.tab
 
-        echo "INFO: gzip kraken2"
-        mv kraken2.tab !{base}_kraken2.tab
-        gzip !{base}_kraken2.tab
+            echo "INFO: gzip kraken2"
+            mv kraken2.tab !{base}_kraken2.tab
+            gzip !{base}_kraken2.tab
 
-    fi
-    
-    '''
+        fi
+
+        # Get process version
+        cat <<-END_VERSIONS > versions.yml
+        "!{task.process}":
+            kraken2: $(kraken2 --version | head -n 1 | awk 'NF>1{print $NF}')
+        END_VERSIONS
+        
+        '''
 }

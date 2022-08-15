@@ -28,20 +28,26 @@ process FILTER_BLAST {
         path ".command.err"
 
     shell:
-    '''
+        '''
 
-    source bash_functions.sh
+        source bash_functions.sh
 
-    python3 !{filter_blast} -i "!{blast_tsv}" \
-    -o "!{base}.blast.tab"
+        python3 !{filter_blast} -i "!{blast_tsv}" \
+        -o "!{base}.blast.tab"
 
-    verify_file_minimum_size "!{base}.blast.tab" 'filtered 16S blastn nr file' '10c'
+        verify_file_minimum_size "!{base}.blast.tab" 'filtered 16S blastn nr file' '10c'
 
-    awk -F $'\t' 'BEGIN{OFS=FS}; {print $1, $3 "% identity", $13 "% alignment", $14}' "!{base}.blast.tab" \
-    > "!{base}.16S-top-species.tsv"
+        awk -F $'\t' 'BEGIN{OFS=FS}; {print $1, $3 "% identity", $13 "% alignment", $14}' "!{base}.blast.tab" \
+        > "!{base}.16S-top-species.tsv"
 
-    cat "!{base}.16S-top-species.tsv" >> "Summary.16S.tab"
-    gzip -f !{blast_tsv}
+        cat "!{base}.16S-top-species.tsv" >> "Summary.16S.tab"
+        gzip -f !{blast_tsv}
 
-    '''
+        # Get process version
+        cat <<-END_VERSIONS > versions.yml
+        "!{task.process}":
+            biopython: $(grep "version" /usr/local/lib/python*/dist-packages/Bio/__init__.py | head -n 1 | awk 'NF>1{print $NF}' | tr -d '"')
+        END_VERSIONS
+
+        '''
 }

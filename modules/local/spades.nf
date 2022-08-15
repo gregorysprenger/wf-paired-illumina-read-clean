@@ -27,60 +27,66 @@ process SPADES {
         path ".command.err"
 
     shell:
-    '''
+        '''
 
-    source bash_functions.sh
+        source bash_functions.sh
 
-    # Assemble with SPAdes
-    failed=0
+        # Assemble with SPAdes
+        failed=0
 
-    echo "INFO: Starting SPAdes"
+        echo "INFO: Starting SPAdes"
 
-    while [[ ! -f tmp/contigs.fasta ]] && [ ${failed} -lt 2 ]; do
-        RAMSIZE_TOT=$(echo !{task.memory} | cut -d ' ' -f 1)
-        echo "INFO: RAMSIZE = ${RAMSIZE_TOT}"
-        if [ ${failed} -gt 0 ]; then
-            echo "ERROR: assembly file not produced by SPAdes for !{base}" >&2
-            mv -f tmp/spades.log \
-            tmp/"${failed}"of3-asm-attempt-failed.spades.log 2> /dev/null
-            echo "INFO: SPAdes failure ${failed}; retrying assembly for !{base}" >&2
-            spades.py --restart-from last -o tmp -t !{task.cpus} >&2
-        else
-            spades.py --pe1-1 !{R1_paired_gz}\
-            --pe1-2 !{R2_paired_gz}\
-            --pe1-s !{single_gz}\
-            --memory "${RAMSIZE_TOT}"\
-            -o tmp --phred-offset 33\
-            -t !{task.cpus} --only-assembler >&2
+        while [[ ! -f tmp/contigs.fasta ]] && [ ${failed} -lt 2 ]; do
+            RAMSIZE_TOT=$(echo !{task.memory} | cut -d ' ' -f 1)
+            echo "INFO: RAMSIZE = ${RAMSIZE_TOT}"
+            if [ ${failed} -gt 0 ]; then
+                echo "ERROR: assembly file not produced by SPAdes for !{base}" >&2
+                mv -f tmp/spades.log \
+                tmp/"${failed}"of3-asm-attempt-failed.spades.log 2> /dev/null
+                echo "INFO: SPAdes failure ${failed}; retrying assembly for !{base}" >&2
+                spades.py --restart-from last -o tmp -t !{task.cpus} >&2
+            else
+                spades.py --pe1-1 !{R1_paired_gz}\
+                --pe1-2 !{R2_paired_gz}\
+                --pe1-s !{single_gz}\
+                --memory "${RAMSIZE_TOT}"\
+                -o tmp --phred-offset 33\
+                -t !{task.cpus} --only-assembler >&2
+            fi
+            failed=$(( ${failed}+1 ))
+        done
+
+        echo "INFO: SPAdes finished"
+        minimum_size=$(( !{size}/200 ))
+        verify_file_minimum_size "tmp/contigs.fasta" 'SPAdes output assembly' '1M'
+        if grep -E -q 'N{60}' "tmp/contigs.fasta"; then
+            # avoid this again: https://github.com/ablab/spades/issues/273
+            echo "ERROR: contigs.fasta contains 60+ Ns" >&2
+            exit 1
         fi
-        failed=$(( ${failed}+1 ))
-    done
 
-    echo "INFO: SPAdes finished"
-    minimum_size=$(( !{size}/200 ))
-    verify_file_minimum_size "tmp/contigs.fasta" 'SPAdes output assembly' '1M'
-    if grep -E -q 'N{60}' "tmp/contigs.fasta"; then
-        # avoid this again: https://github.com/ablab/spades/issues/273
-        echo "ERROR: contigs.fasta contains 60+ Ns" >&2
-        exit 1
-    fi
+        echo "INFO: Verify files"
+        if [[ $(find -L !{outpath}/asm/!{base}.fna -type f -size +2M 2> /dev/null) ]] && \
+        [ -s !{outpath}/asm/!{base}.InDels-corrected.cnt.txt ] && \
+        [ -s !{outpath}/asm/!{base}.SNPs-corrected.cnt.txt ] && \
+        $(grep -P -q "^!{base}\t" !{outpath}/qa/Summary.Illumina.CleanedReads-AlnStats.tab) && \
+        $(grep -P -q "!{outpath}/asm/!{base}.fna\t" !{outpath}/qa/Summary.MLST.tab) && \
+        [[ $(find -L !{outpath}/annot/!{base}.gbk -type f -size +3M 2> /dev/null) ]]; then
+            echo "INFO: found polished assembly for !{base}" >&2
+            exit 0
+        fi
 
-    echo "INFO: Verify files"
-    if [[ $(find -L !{outpath}/asm/!{base}.fna -type f -size +2M 2> /dev/null) ]] && \
-    [ -s !{outpath}/asm/!{base}.InDels-corrected.cnt.txt ] && \
-    [ -s !{outpath}/asm/!{base}.SNPs-corrected.cnt.txt ] && \
-    $(grep -P -q "^!{base}\t" !{outpath}/qa/Summary.Illumina.CleanedReads-AlnStats.tab) && \
-    $(grep -P -q "!{outpath}/asm/!{base}.fna\t" !{outpath}/qa/Summary.MLST.tab) && \
-    [[ $(find -L !{outpath}/annot/!{base}.gbk -type f -size +3M 2> /dev/null) ]]; then
-        echo "INFO: found polished assembly for !{base}" >&2
-        exit 0
-    fi
+        gzip tmp/spades.log\
+        tmp/params.txt
 
-    gzip tmp/spades.log\
-    tmp/params.txt
+        mkdir spades
+        mv tmp/spades.log.gz tmp/params.txt.gz tmp/contigs.fasta tmp/warnings.log tmp/assembly_graph_with_scaffolds.gfa spades/
+        
+        # Get process version
+        cat <<-END_VERSIONS > versions.yml
+        "!{task.process}":
+            spades: $(spades.py --version 2>&1 | awk 'NF>1{print $NF}')
+        END_VERSIONS
 
-    mkdir spades
-    mv tmp/spades.log.gz tmp/params.txt.gz tmp/contigs.fasta tmp/warnings.log tmp/assembly_graph_with_scaffolds.gfa spades/
-    
-    '''
+        '''
 }

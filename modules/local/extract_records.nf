@@ -18,14 +18,20 @@ process EXTRACT_RECORDS {
         path ".command.err"
 
     shell:
-    '''
+        '''
 
-    # 16S extraction
-    if [[ -s "!{annotation}" ]]; then
-        python3 !{extract_record} -i "!{annotation}" \
-        -u product -o "16S.!{base}.fa" -q '16S ribosomal RNA' \
-        --search-type any_q_is_rec -f rRNA
-    fi
+        # 16S extraction
+        if [[ -s "!{annotation}" ]]; then
+            python3 !{extract_record} -i "!{annotation}" \
+            -u product -o "16S.!{base}.fa" -q '16S ribosomal RNA' \
+            --search-type any_q_is_rec -f rRNA
+        fi
 
-    '''
+        # Get process version
+        cat <<-END_VERSIONS > versions.yml
+        "!{task.process}":
+            biopython: $(grep "version" /usr/local/lib/python*/dist-packages/Bio/__init__.py | head -n 1 | awk 'NF>1{print $NF}' | tr -d '"')
+        END_VERSIONS
+
+        '''
 }

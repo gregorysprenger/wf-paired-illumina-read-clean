@@ -19,15 +19,21 @@ process MLST {
         path ".command.err"
 
     shell:
-    '''
+        '''
 
-    # MLST for each assembly
-    echo "INFO: Number of threads found: !{task.cpus}"
+        # MLST for each assembly
+        echo "INFO: Number of threads found: !{task.cpus}"
 
-    if [ -s !{base_fna} ]; then
-        mlst --threads !{task.cpus} "!{base_fna}" \
-        >> Summary.MLST.tab
-    fi
+        if [ -s !{base_fna} ]; then
+            mlst --threads !{task.cpus} "!{base_fna}" \
+            >> Summary.MLST.tab
+        fi
 
-    '''
+        # Get process version
+        cat <<-END_VERSIONS > versions.yml
+        "!{task.process}":
+            mlst: $(mlst --version | awk 'NF>1{print $NF}')
+        END_VERSIONS
+
+        '''
 }

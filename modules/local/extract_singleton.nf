@@ -95,5 +95,11 @@ process EXTRACT_SINGLETONS {
         !{base}_R1.paired.fq\
         !{base}_R2.paired.fq
 
+        # Get process version
+        cat <<-END_VERSIONS > versions.yml
+        "!{task.process}":
+            flash: $(flash --version | head -n 1 | awk 'NF>1{print $NF}')
+        END_VERSIONS
+
         '''
 }

@@ -20,11 +20,17 @@ process FILTER_CONTIGS {
         path ".command.err"
 
     shell:
-    '''
+        '''
 
-    python3 !{filter_contigs} \
-    -i !{contigs}\
-    -b "!{base}" -l 1000 -o !{base}.uncorrected.fna
+        python3 !{filter_contigs} \
+        -i !{contigs}\
+        -b "!{base}" -l 1000 -o !{base}.uncorrected.fna
 
-    '''
+        # Get process version
+        cat <<-END_VERSIONS > versions.yml
+        "!{task.process}":
+            biopython: $(grep "version" /usr/local/lib/python*/dist-packages/Bio/__init__.py | head -n 1 | awk 'NF>1{print $NF}' | tr -d '"')
+        END_VERSIONS
+
+        '''
 }

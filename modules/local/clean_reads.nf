@@ -34,66 +34,74 @@ process CLEAN_READS {
         path ".command.err"
 
     shell:
-    '''
+        '''
 
-    source bash_functions.sh
+        source bash_functions.sh
 
-    # Correct cleaned SPAdes contigs with cleaned PE reads
-    minimum_size=$(( !{size}/200 ))
-    verify_file_minimum_size "!{uncorrected_contigs}" 'filtered SPAdes assembly' ${minimum_size}c
+        # Correct cleaned SPAdes contigs with cleaned PE reads
+        minimum_size=$(( !{size}/200 ))
+        verify_file_minimum_size "!{uncorrected_contigs}" 'filtered SPAdes assembly' ${minimum_size}c
 
-    echo -n '' > !{base}.InDels-corrected.cnt.txt
-    echo -n '' > !{base}.SNPs-corrected.cnt.txt
+        echo -n '' > !{base}.InDels-corrected.cnt.txt
+        echo -n '' > !{base}.SNPs-corrected.cnt.txt
 
-    echo "INFO: Number of threads found: !{task.cpus}"
+        echo "INFO: Number of threads found: !{task.cpus}"
 
-    for _ in {1..3}; do
-        bwa index !{uncorrected_contigs}
+        for _ in {1..3}; do
+            bwa index !{uncorrected_contigs}
 
-        bwa mem -t !{task.cpus} -x intractg -v 2 !{uncorrected_contigs}\
-        !{R1_paired_gz} !{R2_paired_gz} |\
-        samtools sort -@ !{task.cpus} --reference !{uncorrected_contigs} -l 9\
-        -o !{base}.paired.bam
+            bwa mem -t !{task.cpus} -x intractg -v 2 !{uncorrected_contigs}\
+            !{R1_paired_gz} !{R2_paired_gz} |\
+            samtools sort -@ !{task.cpus} --reference !{uncorrected_contigs} -l 9\
+            -o !{base}.paired.bam
 
-        minimum_size_large=$(( !{size}/120 ))
-        verify_file_minimum_size "!{base}.paired.bam" 'binary sequence alignment map' ${minimum_size_large}c
+            minimum_size_large=$(( !{size}/120 ))
+            verify_file_minimum_size "!{base}.paired.bam" 'binary sequence alignment map' ${minimum_size_large}c
 
-        samtools index !{base}.paired.bam
+            samtools index !{base}.paired.bam
 
-        pilon --genome !{uncorrected_contigs} --frags !{base}.paired.bam\
-        --output "!{base}" --changes \
-        --fix snps,indels --mindepth 0.50 --threads !{task.cpus} >&2
+            pilon --genome !{uncorrected_contigs} --frags !{base}.paired.bam\
+            --output "!{base}" --changes \
+            --fix snps,indels --mindepth 0.50 --threads !{task.cpus} >&2
 
-        verify_file_minimum_size "!{uncorrected_contigs}" 'polished assembly' ${minimum_size}c
+            verify_file_minimum_size "!{uncorrected_contigs}" 'polished assembly' ${minimum_size}c
 
-        echo $(grep -c '-' !{base}.changes >> !{base}.InDels-corrected.cnt.txt)
-        echo $(grep -vc '-' !{base}.changes >> !{base}.SNPs-corrected.cnt.txt)
+            echo $(grep -c '-' !{base}.changes >> !{base}.InDels-corrected.cnt.txt)
+            echo $(grep -vc '-' !{base}.changes >> !{base}.SNPs-corrected.cnt.txt)
 
-        rm -f !{base}.{changes,uncorrected.fna}
-        rm -f "!{base}"Pilon.bed
-        mv -f !{base}.fasta !{base}.uncorrected.fna
+            rm -f !{base}.{changes,uncorrected.fna}
+            rm -f "!{base}"Pilon.bed
+            mv -f !{base}.fasta !{base}.uncorrected.fna
 
-        sed -i 's/_pilon//1' !{base}.uncorrected.fna
+            sed -i 's/_pilon//1' !{base}.uncorrected.fna
 
-    done
+        done
 
-    mv -f !{base}.uncorrected.fna !{base}.fna
+        mv -f !{base}.uncorrected.fna !{base}.fna
 
-    verify_file_minimum_size "!{base}.fna" 'corrected SPAdes assembly' ${minimum_size}c
+        verify_file_minimum_size "!{base}.fna" 'corrected SPAdes assembly' ${minimum_size}c
 
-    # Single read mapping if available
-    if [[ !{single_gz} ]]; then
-        bwa index !{base}.fna
+        # Single read mapping if available
+        if [[ !{single_gz} ]]; then
+            bwa index !{base}.fna
 
-        bwa mem -t !{task.cpus} -x intractg -v 2 !{base}.fna\
-        !{single_gz} |\
-        samtools sort -@ !{task.cpus} --reference !{base}.fna -l 9\
-        -o !{base}.single.bam
+            bwa mem -t !{task.cpus} -x intractg -v 2 !{base}.fna\
+            !{single_gz} |\
+            samtools sort -@ !{task.cpus} --reference !{base}.fna -l 9\
+            -o !{base}.single.bam
 
-        verify_file_minimum_size "!{base}.single.bam" 'binary sequence alignment map' '1k'
-        samtools index !{base}.single.bam
+            verify_file_minimum_size "!{base}.single.bam" 'binary sequence alignment map' '1k'
+            samtools index !{base}.single.bam
 
-    fi
+        fi
 
-    '''
+        # Get process version
+        cat <<-END_VERSIONS > versions.yml
+        "!{task.process}":
+            bwa: $(bwa 2>&1 | head -n 3 | tail -1 | awk 'NF>1{print $NF}')
+            samtools: $(samtools --version | head -n 1 | awk 'NF>1{print $NF}')
+            pilon: $(pilon --version | cut -d ' ' -f 3)
+        END_VERSIONS
+
+        '''
 }

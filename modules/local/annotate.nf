@@ -23,27 +23,34 @@ process ANNOTATE {
         path ".command.err"
 
     shell:
-    '''
+        '''
 
-    source bash_functions.sh
-    
-    # Annotate cleaned and corrected assembly
-    echo "INFO: Number of threads found: !{task.cpus}"
+        source bash_functions.sh
+        
+        # Annotate cleaned and corrected assembly
+        echo "INFO: Number of threads found: !{task.cpus}"
 
-    prokka --outdir prokka --prefix "!{base}"\
-    --force --addgenes --locustag "!{base}" --mincontiglen 1\
-    --evalue 1e-08 --cpus !{task.cpus} !{base_fna}
+        prokka --outdir prokka --prefix "!{base}"\
+        --force --addgenes --locustag "!{base}" --mincontiglen 1\
+        --evalue 1e-08 --cpus !{task.cpus} !{base_fna}
 
-    for ext in gb gbf gbff gbk ; do
-    if [ -s "prokka/!{base}.${ext}" ]; then
+        for ext in gb gbf gbff gbk ; do
+        if [ -s "prokka/!{base}.${ext}" ]; then
 
-        mv -f prokka/!{base}.${ext} !{base}.gbk
-        rm -rf !{base}
-        break
-    fi
-    done
-    
-    minimum_size=$(( !{size}/100 ))
-    verify_file_minimum_size "!{base}.${ext}" 'annotated assembly' ${minimum_size}c
-    '''
+            mv -f prokka/!{base}.${ext} !{base}.gbk
+            rm -rf !{base}
+            break
+        fi
+        done
+        
+        minimum_size=$(( !{size}/100 ))
+        verify_file_minimum_size "!{base}.${ext}" 'annotated assembly' ${minimum_size}c
+
+        # Get process version
+        cat <<-END_VERSIONS > versions.yml
+        "!{task.process}":
+            prokka: $(prokka --version 2>&1 | awk 'NF>1{print $NF}')
+        END_VERSIONS
+
+        '''
 }

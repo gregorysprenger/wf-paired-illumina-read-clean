@@ -26,35 +26,41 @@ process QA {
         path ".command.err"
 
     shell:
-    '''
+        '''
 
-    # Run Quast
-    echo "INFO: Number of threads found: !{task.cpus}"
+        # Run Quast
+        echo "INFO: Number of threads found: !{task.cpus}"
 
-    quast.py --output-dir quast --min-contig 100 --threads !{task.cpus} \
-    --no-html --gene-finding --gene-thresholds 300 --contig-thresholds 500,1000 \
-    --ambiguity-usage one --strict-NA --silent "!{base_fna}" >&2
+        quast.py --output-dir quast --min-contig 100 --threads !{task.cpus} \
+        --no-html --gene-finding --gene-thresholds 300 --contig-thresholds 500,1000 \
+        --ambiguity-usage one --strict-NA --silent "!{base_fna}" >&2
 
-    mv -f quast/transposed_report.tsv Summary.Assemblies.tab
+        mv -f quast/transposed_report.tsv Summary.Assemblies.tab
 
-    # Count nucleotides per read set
-    echo -n '' > Summary.Illumina.CleanedReads-Bases.tab
-    for (( i=0; i<3; i+=3 )); do
-        R1=$(basename "!{R1_paired_gz}" _R1.paired.fq.gz)
-        R2=$(basename "!{R2_paired_gz}" _R2.paired.fq.gz)
-        single=$(basename "!{single_gz}" _single.fq.gz)
+        # Count nucleotides per read set
+        echo -n '' > Summary.Illumina.CleanedReads-Bases.tab
+        for (( i=0; i<3; i+=3 )); do
+            R1=$(basename "!{R1_paired_gz}" _R1.paired.fq.gz)
+            R2=$(basename "!{R2_paired_gz}" _R2.paired.fq.gz)
+            single=$(basename "!{single_gz}" _single.fq.gz)
 
-        # Verify each set of reads groups properly
-        nr_uniq_str=$(echo -e "${R1}\n${R2}\n${single}" | sort -u | wc -l)
-        if [ "${nr_uniq_str}" -ne 1 ]; then
-            echo "ERROR: improperly grouped ${R1} ${R2} ${single}" >&2
-            exit 1
-        fi
-        echo -ne "${R1}\t" >> Summary.Illumina.CleanedReads-Bases.tab
-        zcat "!{R1_paired_gz}" "!{R2_paired_gz}" "!{single_gz}" | \
-        awk 'BEGIN{SUM=0} {if(NR%4==2){SUM+=length($0)}} END{print SUM}' \
-        >> Summary.Illumina.CleanedReads-Bases.tab
-    done
+            # Verify each set of reads groups properly
+            nr_uniq_str=$(echo -e "${R1}\n${R2}\n${single}" | sort -u | wc -l)
+            if [ "${nr_uniq_str}" -ne 1 ]; then
+                echo "ERROR: improperly grouped ${R1} ${R2} ${single}" >&2
+                exit 1
+            fi
+            echo -ne "${R1}\t" >> Summary.Illumina.CleanedReads-Bases.tab
+            zcat "!{R1_paired_gz}" "!{R2_paired_gz}" "!{single_gz}" | \
+            awk 'BEGIN{SUM=0} {if(NR%4==2){SUM+=length($0)}} END{print SUM}' \
+            >> Summary.Illumina.CleanedReads-Bases.tab
+        done
 
-    '''
+        # Get process version
+        cat <<-END_VERSIONS > versions.yml
+        "!{task.process}":
+            quast: $(quast.py --version | awk 'NF>1{print $NF}')
+        END_VERSIONS
+
+        '''
 }
