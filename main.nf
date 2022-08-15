@@ -142,7 +142,7 @@ include { GENOME_COVERAGE } from "./modules/local/genome_coverage.nf"
 */
 
 workflow {
-    input_ch = Channel.fromFilePairs(params.inpath+'/*R{1,2}.{fastq,fq}.gz', checkIfExists: true)
+    input_ch = Channel.fromFilePairs(params.inpath+'/*R{1,2}*.{fastq,fq}.gz', checkIfExists: true)
     output_ch = Channel.fromPath(params.outpath)
     phix_ch = Channel.fromPath('files/PhiX_NC_001422.1.fasta', checkIfExists: true)
     adapters_ch = Channel.fromPath('files/adapters_Nextera_NEB_TruSeq_NuGEN_ThruPLEX.fas', checkIfExists: true)
