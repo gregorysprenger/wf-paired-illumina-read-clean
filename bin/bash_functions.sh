@@ -35,7 +35,8 @@ verify_file_minimum_size()
       if [[ $(find -L "${1}" -type f -size +"${3}") ]]; then
         return
       else
-        msg "ERROR: ${2} file ${1} present but < ${3}B" >&2
+        size=$(echo ${3} | sed 's/c//g')
+        msg "ERROR: ${2} file ${1} present but too small (less than ${size} bytes)" >&2
         false
       fi
     else
