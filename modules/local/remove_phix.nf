@@ -32,10 +32,7 @@ process REMOVE_PHIX {
     source bash_functions.sh
     
     # Remove PhiX
-    if ! verify_file_minimum_size !{PHIX} 'PhiX genome' '5k'; then
-        echo "ERROR: PhiX file is too small" >&2
-        exit 1
-    fi
+    verify_file_minimum_size !{PHIX} 'PhiX genome' '5k'
 
     echo "INFO: Starting bbduck"
     echo "INFO: Number of threads found: !{task.cpus}"

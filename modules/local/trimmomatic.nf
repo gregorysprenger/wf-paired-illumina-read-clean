@@ -32,10 +32,7 @@ process TRIMMOMATIC {
     source bash_functions.sh
 
     # Adapter clip and quality trim
-    if ! verify_file_minimum_size !{ADAPTERS} 'adapters' '10k'; then
-        echo "ERROR: Adapters file is too small" >&2
-        exit 1
-    fi
+    verify_file_minimum_size !{ADAPTERS} 'adapters' '10k'
 
     echo "INFO: Starting trimmomatic"
     echo "INFO: Number of threads found: !{task.cpus}"
