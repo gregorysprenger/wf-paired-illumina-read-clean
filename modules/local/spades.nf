@@ -34,7 +34,7 @@ process SPADES {
         # Assemble with SPAdes
         failed=0
 
-        msg "INFO: Starting SPAdes with !{task.cpus} threads"
+        msg "INFO: Running SPAdes with !{task.cpus} threads"
 
         while [[ ! -f tmp/contigs.fasta ]] && [ ${failed} -lt 2 ]; do
             RAMSIZE_TOT=$(echo !{task.memory} | cut -d ' ' -f 1)

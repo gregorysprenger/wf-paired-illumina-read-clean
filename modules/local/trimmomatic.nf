@@ -34,7 +34,7 @@ process TRIMMOMATIC {
         # Adapter clip and quality trim
         verify_file_minimum_size !{ADAPTERS} 'adapters' '10k'
 
-        msg "INFO: Starting trimmomatic with !{task.cpus} threads"
+        msg "INFO: Running trimmomatic with !{task.cpus} threads"
 
         trimmomatic PE -phred33 -threads !{task.cpus}\
         !{noPhiX_R1} !{noPhiX_R2}\

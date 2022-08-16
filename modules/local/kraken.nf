@@ -32,7 +32,7 @@ process KRAKEN_ONE {
 
         # Investigate taxonomic identity of cleaned reads
         if [ ! -s !{base}_taxonomy-reads.tab ]; then
-            msg "INFO: Starting Kraken1 with !{task.cpus} threads"
+            msg "INFO: Running Kraken1 with !{task.cpus} threads"
             kraken --db /kraken-database/minikraken_20171013_4GB --threads !{task.cpus} --fastq-input --gzip-compressed \
             !{R1_paired_gz} !{R2_paired_gz} !{single_gz} > !{base}_kraken.output
 
@@ -86,7 +86,7 @@ process KRAKEN_TWO {
         source summarize_kraken.sh
 
         if [ ! -s !{base}_taxonomy2-reads.tab ]; then
-            msg "INFO: Starting Kraken2 with !{task.cpus} threads"
+            msg "INFO: Running Kraken2 with !{task.cpus} threads"
             kraken2 --db /kraken2-db --threads !{task.cpus} --gzip-compressed --output /dev/null \
             --use-names --report kraken2.tab \
             !{R1_paired_gz} !{R2_paired_gz} !{single_gz}
