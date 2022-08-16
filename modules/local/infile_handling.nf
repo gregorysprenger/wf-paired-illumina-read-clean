@@ -28,8 +28,8 @@ process INFILE_HANDLING {
 
     source bash_functions.sh
     
-    echo "INFO: R1 = !{input[0]}"
-    echo "INFO: R2 = !{input[1]}"
+    msg "INFO: R1 = !{input[0]}"
+    msg "INFO: R2 = !{input[1]}"
 
     verify_file_minimum_size !{input[0]} 'fastq' '10M'
     verify_file_minimum_size !{input[1]} 'fastq' '10M'

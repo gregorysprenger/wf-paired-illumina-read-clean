@@ -45,7 +45,7 @@ process CLEAN_READS {
         echo -n '' > !{base}.InDels-corrected.cnt.txt
         echo -n '' > !{base}.SNPs-corrected.cnt.txt
 
-        echo "INFO: Number of threads found: !{task.cpus}"
+        msg "INFO: Correcting contigs with PE reads using !{task.cpus} threads"
 
         for _ in {1..3}; do
             bwa index !{uncorrected_contigs}
@@ -83,6 +83,7 @@ process CLEAN_READS {
 
         # Single read mapping if available
         if [[ !{single_gz} ]]; then
+            msg "INFO: Single read mapping with !{task.cpus} threads"
             bwa index !{base}.fna
 
             bwa mem -t !{task.cpus} -x intractg -v 2 !{base}.fna\

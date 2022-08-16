@@ -23,7 +23,10 @@ process CLEANED_COVERAGE {
     shell:
         '''
 
+        source bash_functions.sh
+
         # Calculate coverage
+        msg "INFO: Running bedtools"
 
         single_cov='0 bp TooFewToMap Singleton Reads (0.0x)\t'
         if [ -s !{single_bam} ]; then
@@ -33,7 +36,7 @@ process CLEANED_COVERAGE {
 
         cov_nfo=$(bedtools genomecov -d -split -ibam !{base}.paired.bam |\
         awk -v SEcov="${single_cov}" 'BEGIN{sum=0} {sum+=$3} END{
-        print sum " bp Paired Reads Mapped (" sum/NR "x)\t" SEcov NR " bp Genome"}')
+            print sum " bp Paired Reads Mapped (" sum/NR "x)\t" SEcov NR " bp Genome"}')
 
         echo -e "!{base}\t${cov_nfo}" >> \
         Summary.Illumina.CleanedReads-AlnStats.tab

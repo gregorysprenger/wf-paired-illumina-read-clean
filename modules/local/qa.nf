@@ -28,8 +28,10 @@ process QA {
     shell:
         '''
 
+        source bash_functions.sh
+
         # Run Quast
-        echo "INFO: Number of threads found: !{task.cpus}"
+        msg "INFO: Running QUAST with !{task.cpus} threads"
 
         quast.py --output-dir quast --min-contig 100 --threads !{task.cpus} \
         --no-html --gene-finding --gene-thresholds 300 --contig-thresholds 500,1000 \
@@ -47,7 +49,7 @@ process QA {
             # Verify each set of reads groups properly
             nr_uniq_str=$(echo -e "${R1}\n${R2}\n${single}" | sort -u | wc -l)
             if [ "${nr_uniq_str}" -ne 1 ]; then
-                echo "ERROR: improperly grouped ${R1} ${R2} ${single}" >&2
+                msg "ERROR: improperly grouped ${R1} ${R2} ${single}" >&2
                 exit 1
             fi
             echo -ne "${R1}\t" >> Summary.Illumina.CleanedReads-Bases.tab

@@ -21,6 +21,8 @@ process GENOME_COVERAGE {
     shell:
         '''
 
+        source bash_functions.sh
+
         # Report coverage
         echo -n '' > Summary.Illumina.GenomeCoverage.tab
         i=0
@@ -31,15 +33,15 @@ process GENOME_COVERAGE {
             basepairs=$(grep ${ln[0]} !{summary_stats} \
             2> /dev/null | awk 'BEGIN{FS="\t"}; {print $2}' | awk '{print $1}' | sort -u)
             if [[ "${basepairs}" =~ ^[0-9]+$ ]]; then
-                echo "INFO: read alignment data for ${ln[0]} used for coverage" >&2
+                msg "INFO: read alignment data for ${ln[0]} used for coverage" >&2
             else
                 basepairs=$(grep ${ln[0]} !{summary_bases} | cut -f 2)
-                echo "INFO: read alignment data absent for ${ln[0]}, so cleaned bases" >&2
-                echo "      given to the assembler were used to calculate coverage" >&2
+                msg "INFO: read alignment data absent for ${ln[0]}, so cleaned bases" >&2
+                msg "      given to the assembler were used to calculate coverage" >&2
             fi
             genomelen=${ln[7]}
             cov=$(echo | awk -v x=${basepairs} -v y=${genomelen} '{printf ("%0.1f", x/y)}')
-            echo "INFO: cov = $cov"
+            msg "INFO: cov = $cov"
             if [[ "${cov}" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
                 echo -e "${ln[0]}\t${cov}"x >> Summary.Illumina.GenomeCoverage.tab
                 ((i=i+1))

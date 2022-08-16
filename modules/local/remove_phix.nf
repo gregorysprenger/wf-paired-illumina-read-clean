@@ -34,14 +34,12 @@ process REMOVE_PHIX {
         # Remove PhiX
         verify_file_minimum_size !{PHIX} 'PhiX genome' '5k'
 
-        echo "INFO: Starting bbduck"
-        echo "INFO: Number of threads found: !{task.cpus}"
+        msg "INFO: Running bbduk with !{task.cpus} threads"
 
         bbduk.sh threads=!{task.cpus} k=31 hdist=1\
         ref="!{PHIX}" in="!{input[0]}" in2="!{input[1]}"\
         out=!{base}_noPhiX-R1.fsq out2=!{base}_noPhiX-R2.fsq\
         qin=auto qout=33 overwrite=t
-        echo "INFO: bbduck finished"
 
         minimum_size=$(( !{size}/120 ))
         for suff in R1.fsq R2.fsq ; do
@@ -54,7 +52,7 @@ process REMOVE_PHIX {
         | awk '{print $4}')
 
         if [[ -z "${TOT_READS}" || -z "${TOT_BASES}" ]]; then
-            echo 'ERROR: unable to parse input counts from bbduk log' >&2
+            msg 'ERROR: unable to parse input counts from bbduk log' >&2
             exit 1
         fi
 
@@ -63,8 +61,8 @@ process REMOVE_PHIX {
         PHIX_BASES=$(grep '^Contaminants: ' .command.err \
         | awk '{print $5}' | sed 's/,//g')
 
-        echo "INFO: ${TOT_BASES} bp and $TOT_READS reads provided as raw input"
-        echo "INFO: ${PHIX_BASES:-0} bp of PhiX were detected and removed in ${PHIX_READS:-0} reads"
+        msg "INFO: ${TOT_BASES} bp and $TOT_READS reads provided as raw input"
+        msg "INFO: ${PHIX_BASES:-0} bp of PhiX were detected and removed in ${PHIX_READS:-0} reads"
 
         echo -e "!{base}\t${TOT_BASES} bp Raw\t${TOT_READS} reads Raw" \
         > !{base}_raw.tsv

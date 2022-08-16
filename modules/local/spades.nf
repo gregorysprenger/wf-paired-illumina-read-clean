@@ -34,16 +34,16 @@ process SPADES {
         # Assemble with SPAdes
         failed=0
 
-        echo "INFO: Starting SPAdes"
+        msg "INFO: Starting SPAdes with !{task.cpus} threads"
 
         while [[ ! -f tmp/contigs.fasta ]] && [ ${failed} -lt 2 ]; do
             RAMSIZE_TOT=$(echo !{task.memory} | cut -d ' ' -f 1)
-            echo "INFO: RAMSIZE = ${RAMSIZE_TOT}"
+            msg "INFO: RAMSIZE = ${RAMSIZE_TOT}"
             if [ ${failed} -gt 0 ]; then
-                echo "ERROR: assembly file not produced by SPAdes for !{base}" >&2
+                msg "ERROR: assembly file not produced by SPAdes for !{base}" >&2
                 mv -f tmp/spades.log \
                 tmp/"${failed}"of3-asm-attempt-failed.spades.log 2> /dev/null
-                echo "INFO: SPAdes failure ${failed}; retrying assembly for !{base}" >&2
+                msg "INFO: SPAdes failure ${failed}; retrying assembly for !{base}" >&2
                 spades.py --restart-from last -o tmp -t !{task.cpus} >&2
             else
                 spades.py --pe1-1 !{R1_paired_gz}\
@@ -56,23 +56,21 @@ process SPADES {
             failed=$(( ${failed}+1 ))
         done
 
-        echo "INFO: SPAdes finished"
         minimum_size=$(( !{size}/200 ))
         verify_file_minimum_size "tmp/contigs.fasta" 'SPAdes output assembly' '1M'
         if grep -E -q 'N{60}' "tmp/contigs.fasta"; then
             # avoid this again: https://github.com/ablab/spades/issues/273
-            echo "ERROR: contigs.fasta contains 60+ Ns" >&2
+            msg "ERROR: contigs.fasta contains 60+ Ns" >&2
             exit 1
         fi
 
-        echo "INFO: Verify files"
         if [[ $(find -L !{outpath}/asm/!{base}.fna -type f -size +2M 2> /dev/null) ]] && \
         [ -s !{outpath}/asm/!{base}.InDels-corrected.cnt.txt ] && \
         [ -s !{outpath}/asm/!{base}.SNPs-corrected.cnt.txt ] && \
         $(grep -P -q "^!{base}\t" !{outpath}/qa/Summary.Illumina.CleanedReads-AlnStats.tab) && \
         $(grep -P -q "!{outpath}/asm/!{base}.fna\t" !{outpath}/qa/Summary.MLST.tab) && \
         [[ $(find -L !{outpath}/annot/!{base}.gbk -type f -size +3M 2> /dev/null) ]]; then
-            echo "INFO: found polished assembly for !{base}" >&2
+            msg "INFO: found polished assembly for !{base}" >&2
             exit 0
         fi
 

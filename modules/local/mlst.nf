@@ -21,8 +21,10 @@ process MLST {
     shell:
         '''
 
+        source bash_functions.sh
+
         # MLST for each assembly
-        echo "INFO: Number of threads found: !{task.cpus}"
+        msg "INFO: Running MLST with !{task.cpus} threads"
 
         if [ -s !{base_fna} ]; then
             mlst --threads !{task.cpus} "!{base_fna}" \

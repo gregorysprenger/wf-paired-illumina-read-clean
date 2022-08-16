@@ -28,8 +28,8 @@ process BARRNAP {
         source bash_functions.sh
 
         if [[ ! -f "!{extracted_rna}" ]] || [[ ! -s "!{extracted_rna}" ]]; then
-            echo -n "INFO: absent 16S rRNA gene annotation in !{annotation};" >&2
-            echo ' trying BARRNAP...' >&2
+            msg "INFO: absent 16S rRNA gene annotation in !{annotation};" >&2
+            msg 'Running barrnapp' >&2
             barrnap !{base_fna} > !{base}.gff
             bedtools getfasta \
                 -fi !{base_fna} \
@@ -37,7 +37,7 @@ process BARRNAP {
                 -fo 16S.!{base}.fa
 
             if [[ $(grep -c '>' "!{extracted_rna}") -eq 0 ]]; then
-                echo "INFO: RNAmmer was unable to locate a 16S rRNA gene sequence in !{base_fna}" >&2
+                msg "INFO: RNAmmer was unable to locate a 16S rRNA gene sequence in !{base_fna}" >&2
                 rm "16S.!{base}.fa"
                 exit 2
             fi

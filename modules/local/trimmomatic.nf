@@ -34,8 +34,7 @@ process TRIMMOMATIC {
         # Adapter clip and quality trim
         verify_file_minimum_size !{ADAPTERS} 'adapters' '10k'
 
-        echo "INFO: Starting trimmomatic"
-        echo "INFO: Number of threads found: !{task.cpus}"
+        msg "INFO: Starting trimmomatic with !{task.cpus} threads"
 
         trimmomatic PE -phred33 -threads !{task.cpus}\
         !{noPhiX_R1} !{noPhiX_R2}\
@@ -44,12 +43,10 @@ process TRIMMOMATIC {
         ILLUMINACLIP:!{ADAPTERS}:2:20:10:8:TRUE\
         SLIDINGWINDOW:6:30 LEADING:10 TRAILING:10 MINLEN:50
 
-        echo "INFO: Finished trimmomatic"
-
         TRIMMO_DISCARD=$(grep '^Input Read Pairs: ' .command.err \
         | grep ' Dropped: ' | awk '{print $20}')
 
-        echo "INFO: $TRIMMO_DISCARD reads are poor quality and were discarded" >&2
+        msg "INFO: $TRIMMO_DISCARD reads are poor quality and were discarded" >&2
 
         CNT_BROKEN_R1=$(awk '{lines++} END{print lines/4}' \
         !{base}_R1.unpaired.fq)
@@ -57,15 +54,15 @@ process TRIMMOMATIC {
         !{base}_R2.unpaired.fq)
 
         if [[ -z "${TRIMMO_DISCARD}" || -z "${CNT_BROKEN_R1}" || -z "${CNT_BROKEN_R2}" ]]; then
-            echo 'ERROR: unable to parse discarded read counts from trimmomatic log' >&2
+            msg 'ERROR: unable to parse discarded read counts from trimmomatic log' >&2
             exit 1
         fi
 
         CNT_BROKEN=$((${CNT_BROKEN_R1} + ${CNT_BROKEN_R2}))
 
-        echo "INFO: $CNT_BROKEN_R1 forward reads lacked a high quality R2 sister read" >&2
-        echo "INFO: $CNT_BROKEN_R2 reverse reads lacked a high quality R1 sister read" >&2
-        echo "INFO: $CNT_BROKEN total broken read pairs were saved as singletons" >&2
+        msg "INFO: $CNT_BROKEN_R1 forward reads lacked a high quality R2 sister read" >&2
+        msg "INFO: $CNT_BROKEN_R2 reverse reads lacked a high quality R1 sister read" >&2
+        msg "INFO: $CNT_BROKEN total broken read pairs were saved as singletons" >&2
         
         echo -e "!{base}\t${TRIMMO_DISCARD} reads Discarded\t${CNT_BROKEN} reads Singletons" \
         > !{base}_trimmo.tsv

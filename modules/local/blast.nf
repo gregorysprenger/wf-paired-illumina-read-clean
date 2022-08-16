@@ -32,7 +32,7 @@ process BLAST {
     cd ..
     export BLASTDB=db
 
-    echo "INFO: Number of threads found: !{task.cpus}"
+    msg "INFO: Running blastn with !{task.cpus} threads"
 
     blastn -word_size 10 -task blastn -db 16S_ribosomal_RNA \
     -num_threads "!{task.cpus}" \
@@ -40,7 +40,7 @@ process BLAST {
     -out "!{base}.blast.tsv" \
     -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovhsp ssciname"
 
-    #verify_file_minimum_size "!{base}.blast.tsv" '16S blastn nr output file' '10c'
+    verify_file_minimum_size "!{base}.blast.tsv" '16S blastn nr output file' '10c'
 
     '''
 }

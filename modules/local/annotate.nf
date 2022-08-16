@@ -28,7 +28,7 @@ process ANNOTATE {
         source bash_functions.sh
         
         # Annotate cleaned and corrected assembly
-        echo "INFO: Number of threads found: !{task.cpus}"
+        msg "INFO: Running prokka with !{task.cpus} threads"
 
         prokka --outdir prokka --prefix "!{base}"\
         --force --addgenes --locustag "!{base}" --mincontiglen 1\
