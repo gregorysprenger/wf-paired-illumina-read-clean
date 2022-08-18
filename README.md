@@ -3,6 +3,9 @@
 ## Steps in the workflow
 1. Run [paired-illumina-read-clean](https://github.com/chrisgulvik/UnivaGridEngine_UGE_cluster_scripts/blob/master/_trim.asm.annot.uge-bash) to trim illumina reads.
 
+![workflow](images/workflow_v1.0.0.png)
+*A schematic of the steps in the workflow.*
+
 ## Requirements
 * Nextflow
 * Docker or Singularity
