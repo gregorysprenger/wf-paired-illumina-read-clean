@@ -78,8 +78,12 @@ process SPADES {
         tmp/params.txt
 
         mkdir spades
-        mv tmp/spades.log.gz tmp/params.txt.gz tmp/contigs.fasta tmp/warnings.log tmp/assembly_graph_with_scaffolds.gfa spades/
+        mv tmp/spades.log.gz tmp/params.txt.gz tmp/contigs.fasta tmp/assembly_graph_with_scaffolds.gfa spades/
         
+        if [ -f tmp/warnings.log ]; then
+            mv tmp/warnings.log spades/
+        fi
+
         # Get process version
         cat <<-END_VERSIONS > versions.yml
         "!{task.process}":
