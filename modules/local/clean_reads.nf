@@ -11,7 +11,7 @@ process CLEAN_READS {
         pattern: ".command.*",
         saveAs: { filename -> "${task.process}${filename}"}
 
-    label "process_medium"
+    label "process_high"
 
     container "gregorysprenger/bwa-samtools-pilon@sha256:209ac13b381188b4a72fe746d3ff93d1765044cbf73c3957e4e2f843886ca57f"
     
