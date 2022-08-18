@@ -23,15 +23,20 @@ process BLAST {
     source bash_functions.sh
 
     # Classify each 16S sequence record
-
-    mkdir db
-    cd db
-    wget https://ftp.ncbi.nlm.nih.gov/blast/db/16S_ribosomal_RNA.tar.gz -O db.tar.gz
-    tar -xvf db.tar.gz
-    rm db.tar.gz
-    cd ..
-    export BLASTDB=db
-
+    if [ !{params.blast_db} == null ]; then
+        mkdir db
+        cd db
+        wget https://ftp.ncbi.nlm.nih.gov/blast/db/16S_ribosomal_RNA.tar.gz -O db.tar.gz
+        tar -xvf db.tar.gz
+        rm db.tar.gz
+        cd ..
+        database=db
+        export BLASTDB=${database}
+    else
+        database=!{params.blast_db}
+        export BLASTDB=${database}
+    fi
+    echo "BLAST DB = ${database}"
     msg "INFO: Running blastn with !{task.cpus} threads"
 
     blastn -word_size 10 -task blastn -db 16S_ribosomal_RNA \

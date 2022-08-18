@@ -25,6 +25,9 @@ def helpMessage() {
       --outpath            The output directory where the results will be saved.
     Analysis options:
       --size               Specify file size that is used to verify minimum file sizes in all processes in BYTES, e.g. 1000.
+      --kraken1_db         Specify path to database for Kraken1. Default database is Mini Kraken.
+      --kraken2_db         Specify path to database for Kraken2. Default database is Mini Kraken.
+      --blast_db           Specify path to 16S ribosomal database for BLAST. Default database is NCBI's 16S ribosomal database.
       --bigdata            Whether or not to use more compute resources. Options are true, false (default).
       --max_memory         Specify memory limit on your machine/infrastructure, e.g. '128.GB'. Useful to ensure workflow doesn't request too many resources.
       --max_time           Specify time limit for each process, e.g. '240.h'. Useful to ensure workflow doesn't request too many resources.

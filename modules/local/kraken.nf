@@ -30,14 +30,20 @@ process KRAKEN_ONE {
         source bash_functions.sh
         source summarize_kraken.sh
 
+        if [ !{params.kraken1_db} == null ]; then
+            database=/kraken-database/minikraken_20171013_4GB
+        else
+            database=!{params.kraken1_db}
+        fi
+        echo "KRAKEN 1 DATABASE = ${database}"
         # Investigate taxonomic identity of cleaned reads
         if [ ! -s !{base}_taxonomy-reads.tab ]; then
             msg "INFO: Running Kraken1 with !{task.cpus} threads"
-            kraken --db /kraken-database/minikraken_20171013_4GB --threads !{task.cpus} --fastq-input --gzip-compressed \
+            kraken --db ${database} --threads !{task.cpus} --fastq-input --gzip-compressed \
             !{R1_paired_gz} !{R2_paired_gz} !{single_gz} > !{base}_kraken.output
 
             msg "INFO: Running kraken-report"
-            kraken-report --db /kraken-database/minikraken_20171013_4GB !{base}_kraken.output > kraken.tab 2>&1 | tr '^M' '\n' 1>&2
+            kraken-report --db ${database} !{base}_kraken.output > kraken.tab 2>&1 | tr '^M' '\n' 1>&2
 
             msg "INFO: Summarizing Kraken1"
             summarize_kraken 'kraken.tab' > !{base}_taxonomy-reads.tab
@@ -78,6 +84,8 @@ process KRAKEN_TWO {
     output:
         path "*taxonomy2-reads.tab"
         path "*kraken2.tab.gz"
+        path ".command.out"
+        path ".command.err"
 
     shell:
         '''
@@ -85,9 +93,15 @@ process KRAKEN_TWO {
         source bash_functions.sh
         source summarize_kraken.sh
 
+        if [ !{params.kraken2_db} == null ]; then
+            database=/kraken2-db
+        else
+            database=!{params.kraken2_db}
+        fi
+        echo "KRAKEN 2 DATABASE = ${database}"
         if [ ! -s !{base}_taxonomy2-reads.tab ]; then
             msg "INFO: Running Kraken2 with !{task.cpus} threads"
-            kraken2 --db /kraken2-db --threads !{task.cpus} --gzip-compressed --output /dev/null \
+            kraken2 --db "${database}" --threads !{task.cpus} --gzip-compressed --output /dev/null \
             --use-names --report kraken2.tab \
             !{R1_paired_gz} !{R2_paired_gz} !{single_gz}
 
