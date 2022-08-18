@@ -147,11 +147,11 @@ include { GENOME_COVERAGE } from "./modules/local/genome_coverage.nf"
 workflow {
     input_ch = Channel.fromFilePairs(params.inpath+'/*R{1,2}*.{fastq,fq}.gz', checkIfExists: true)
     output_ch = Channel.fromPath(params.outpath)
-    phix_ch = Channel.fromPath('files/PhiX_NC_001422.1.fasta', checkIfExists: true)
-    adapters_ch = Channel.fromPath('files/adapters_Nextera_NEB_TruSeq_NuGEN_ThruPLEX.fas', checkIfExists: true)
-    filter_contigs_ch = Channel.fromPath('files/filter.contigs.py', checkIfExists: true)
-    extract_record_ch = Channel.fromPath('files/extract.record.from.genbank.py', checkIfExists: true)
-    filter_blast_ch = Channel.fromPath('files/filter.blast.py', checkIfExists: true)
+    phix_ch = Channel.fromPath('bin/PhiX_NC_001422.1.fasta', checkIfExists: true)
+    adapters_ch = Channel.fromPath('bin/adapters_Nextera_NEB_TruSeq_NuGEN_ThruPLEX.fas', checkIfExists: true)
+    filter_contigs_ch = Channel.fromPath('bin/filter.contigs.py', checkIfExists: true)
+    extract_record_ch = Channel.fromPath('bin/extract.record.from.genbank.py', checkIfExists: true)
+    filter_blast_ch = Channel.fromPath('bin/filter.blast.py', checkIfExists: true)
 
     INFILE_HANDLING (
         input_ch
