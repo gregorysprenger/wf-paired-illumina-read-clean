@@ -47,5 +47,11 @@ process BLAST {
 
     verify_file_minimum_size "!{base}.blast.tsv" '16S blastn nr output file' '10c'
 
+    # Get process version
+    cat <<-END_VERSIONS > versions.yml
+    "!{task.process}":
+        blast: $(blast -version | head -n 1 | awk 'NF>1{print $NF}' | cut -d '+' -f 1)
+    END_VERSIONS
+
     '''
 }
