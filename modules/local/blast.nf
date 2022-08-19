@@ -16,6 +16,7 @@ process BLAST {
         path "*.blast.tsv", emit: blast_tsv
         path ".command.out"
         path ".command.err"
+        path "versions.yml", emit: versions
 
     shell:
     '''

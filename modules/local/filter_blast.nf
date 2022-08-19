@@ -26,6 +26,7 @@ process FILTER_BLAST {
         path "*species.tsv"
         path ".command.out"
         path ".command.err"
+        path "versions.yml", emit: versions
 
     shell:
         '''

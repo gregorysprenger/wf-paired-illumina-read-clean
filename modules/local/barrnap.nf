@@ -20,7 +20,7 @@ process BARRNAP {
         path "16s.*.fa", emit: extracted_base
         path ".command.out"
         path ".command.err"
-        
+        path "versions.yml", emit: versions
 
     shell:
         '''

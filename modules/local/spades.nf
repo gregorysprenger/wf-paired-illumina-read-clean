@@ -25,6 +25,7 @@ process SPADES {
         path "spades/contigs.fasta", emit: contigs
         path ".command.out"
         path ".command.err"
+        path "versions.yml", emit: versions
 
     shell:
         '''

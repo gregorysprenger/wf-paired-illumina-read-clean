@@ -32,6 +32,7 @@ process CLEAN_READS {
         path "*.single.bam", emit: single_bam
         path ".command.out"
         path ".command.err"
+        path "versions.yml", emit: versions
 
     shell:
         '''

@@ -21,6 +21,7 @@ process ANNOTATE {
         path "*.gbk", emit: annotation
         path ".command.out"
         path ".command.err"
+        path "versions.yml", emit: versions
 
     shell:
         '''

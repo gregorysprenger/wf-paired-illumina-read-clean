@@ -17,6 +17,7 @@ process MLST {
         path "Summary.MLST.tab"
         path ".command.out"
         path ".command.err"
+        path "versions.yml", emit: versions
 
     shell:
         '''

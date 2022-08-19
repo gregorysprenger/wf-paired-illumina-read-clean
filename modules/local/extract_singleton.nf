@@ -27,6 +27,7 @@ process EXTRACT_SINGLETONS {
         path "*clean-reads.tsv"
         path ".command.out"
         path ".command.err"
+        path "versions.yml", emit: versions
 
     shell:
         '''

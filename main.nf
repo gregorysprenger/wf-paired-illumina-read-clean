@@ -145,6 +145,8 @@ include { GENOME_COVERAGE } from "./modules/local/genome_coverage.nf"
 */
 
 workflow {
+
+    // SETUP: Define input, output, and dependency channels
     input_ch = Channel.fromFilePairs(params.inpath+'/*R{1,2}*.{fastq,fq}.gz', checkIfExists: true)
     output_ch = Channel.fromPath(params.outpath)
     phix_ch = Channel.fromPath('bin/PhiX_NC_001422.1.fasta', checkIfExists: true)
@@ -152,11 +154,14 @@ workflow {
     filter_contigs_ch = Channel.fromPath('bin/filter.contigs.py', checkIfExists: true)
     extract_record_ch = Channel.fromPath('bin/extract.record.from.genbank.py', checkIfExists: true)
     filter_blast_ch = Channel.fromPath('bin/filter.blast.py', checkIfExists: true)
+    ch_versions = Channel.empty()
 
+    // PROCESS: Read files from input directory, validate and stage input files
     INFILE_HANDLING (
         input_ch
     )
 
+    // PROCESS: Run bbduk to remove PhiX reads
     REMOVE_PHIX (
         phix_ch,
         INFILE_HANDLING.out.input,
@@ -164,6 +169,9 @@ workflow {
         INFILE_HANDLING.out.size
     )
 
+    ch_versions = ch_versions.mix(REMOVE_PHIX.out.versions)
+
+    // PROCESS: Run trimmomatic to clip adapters and do quality trimming
     TRIMMOMATIC (
         adapters_ch,
         REMOVE_PHIX.out.noPhiX_R1,
@@ -173,6 +181,9 @@ workflow {
         INFILE_HANDLING.out.size
     )
 
+    ch_versions = ch_versions.mix(TRIMMOMATIC.out.versions)
+
+    // PROCESS: Run flash to merge overlapping sister reads into singleton reads
     EXTRACT_SINGLETONS (
         INFILE_HANDLING.out.input,
         TRIMMOMATIC.out.R1_paired,
@@ -181,6 +192,9 @@ workflow {
         INFILE_HANDLING.out.size
     )
 
+    ch_versions = ch_versions.mix(EXTRACT_SINGLETONS.out.versions)
+
+    // PROCESS: Run kraken1 on paired reads
     KRAKEN_ONE (
         EXTRACT_SINGLETONS.out.R1_paired_gz,
         EXTRACT_SINGLETONS.out.R2_paired_gz,
@@ -188,6 +202,9 @@ workflow {
         INFILE_HANDLING.out.base
     )
 
+    ch_versions = ch_versions.mix(KRAKEN_ONE.out.versions)
+
+    // PROCESS: Run kraken2 on paired reads
     KRAKEN_TWO (
         EXTRACT_SINGLETONS.out.R1_paired_gz,
         EXTRACT_SINGLETONS.out.R2_paired_gz,
@@ -195,6 +212,9 @@ workflow {
         INFILE_HANDLING.out.base
     )
 
+    ch_versions = ch_versions.mix(KRAKEN_TWO.out.versions)
+
+    // PROCESS: Run SPAdes to assemble contigs
     SPADES (
         EXTRACT_SINGLETONS.out.R1_paired_gz,
         EXTRACT_SINGLETONS.out.R2_paired_gz,
@@ -204,6 +224,9 @@ workflow {
         INFILE_HANDLING.out.size
     )
 
+    ch_versions = ch_versions.mix(SPADES.out.versions)
+
+    // PROCESS: Filter contigs based on length, coverage, GC skew, and compositional complexity
     FILTER_CONTIGS (
         filter_contigs_ch,
         SPADES.out.contigs,
@@ -212,6 +235,9 @@ workflow {
         INFILE_HANDLING.out.base
     )
 
+    ch_versions = ch_versions.mix(FILTER_CONTIGS.out.versions)
+
+    // PROCESS: Use BWA/Samtools/Pilon to correct contigs with PE reads
     CLEAN_READS (
         FILTER_CONTIGS.out.uncorrected_contigs,
         EXTRACT_SINGLETONS.out.R1_paired_gz,
@@ -222,28 +248,43 @@ workflow {
         INFILE_HANDLING.out.size
     )
 
+    ch_versions = ch_versions.mix(CLEAN_READS.out.versions)
+
+    // PROCESS: Run Bedtools to calculate coverage
     CLEANED_COVERAGE (
         CLEAN_READS.out.single_bam,
         CLEAN_READS.out.paired_bam,
         INFILE_HANDLING.out.base
     )
 
+    ch_versions = ch_versions.mix(CLEANED_COVERAGE.out.versions)
+
+    // PROCESS: Run MLST to find MLST for each assembly
     MLST (
         CLEAN_READS.out.base_fna
     )
 
+    ch_versions = ch_versions.mix(MLST.out.versions)
+
+    // PROCESS: Run Prokka to annotate reads
     ANNOTATE (
         CLEAN_READS.out.base_fna,
         INFILE_HANDLING.out.base,
         INFILE_HANDLING.out.size
     )
 
+    ch_versions = ch_versions.mix(ANNOTATE.out.versions)
+
+    // PROCESS: Extract records from annotation file
     EXTRACT_RECORDS (
         extract_record_ch,
         ANNOTATE.out.annotation,
         INFILE_HANDLING.out.base
     )
 
+    ch_versions = ch_versions.mix(EXTRACT_RECORDS.out.versions)
+
+    // PROCESS: Run Barrnap to predict ribosomal RNA genes
     BARRNAP (
         EXTRACT_RECORDS.out.extracted_rna,
         CLEAN_READS.out.base_fna,
@@ -251,12 +292,18 @@ workflow {
         INFILE_HANDLING.out.base
     )
 
+    ch_versions = ch_versions.mix(BARRNAP.out.versions)
+
+    // PROCESS: Run Blast on predicted ribosomal RNA genes
     BLAST (
         BARRNAP.out.extracted_base,
         CLEAN_READS.out.base_fna,
         INFILE_HANDLING.out.base
     )
 
+    ch_versions = ch_versions.mix(BLAST.out.versions)
+
+    // PROCESS: Filter Blast output for best score
     FILTER_BLAST (
         filter_blast_ch,
         BLAST.out.blast_tsv,
@@ -265,6 +312,9 @@ workflow {
         INFILE_HANDLING.out.base
     )
 
+    ch_versions = ch_versions.mix(FILTER_BLAST.out.versions)
+
+    // PROCESS: Run QUAST for quality assessment 
     QA (
         CLEAN_READS.out.base_fna,
         EXTRACT_SINGLETONS.out.R1_paired_gz,
@@ -273,11 +323,17 @@ workflow {
         INFILE_HANDLING.out.base
     )
 
+    ch_versions = ch_versions.mix(QA.out.versions)
+
+    // PROCESS: Calculate genome coverage
     GENOME_COVERAGE (
         CLEANED_COVERAGE.out.summary_stats,
         QA.out.summary_assemblies,
         QA.out.summary_bases
     )
+    
+    // PATTERN: Collate method version information
+    ch_versions.collectFile(name: 'software_versions.yml', storeDir: params.logpath)
 }
 
 /*

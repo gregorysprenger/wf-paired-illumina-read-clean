@@ -25,6 +25,7 @@ process REMOVE_PHIX {
         path "*phix.tsv"
         path ".command.out"
         path ".command.err"
+        path "versions.yml", emit: versions
 
     shell:
         '''

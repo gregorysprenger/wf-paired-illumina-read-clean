@@ -24,6 +24,7 @@ process QA {
         path "Summary.Illumina.CleanedReads-Bases.tab", emit: summary_bases
         path ".command.out"
         path ".command.err"
+        path "versions.yml", emit: versions
 
     shell:
         '''

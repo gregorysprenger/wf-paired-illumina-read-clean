@@ -19,6 +19,7 @@ process CLEANED_COVERAGE {
         path "Summary.Illumina.CleanedReads-AlnStats.tab", emit: summary_stats
         path ".command.out"
         path ".command.err"
+        path "versions.yml", emit: versions
 
     shell:
         '''

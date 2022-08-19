@@ -27,6 +27,7 @@ process TRIMMOMATIC {
         path "*single.fq"
         path ".command.out"
         path ".command.err"
+        path "versions.yml", emit: versions
 
     shell:
         '''

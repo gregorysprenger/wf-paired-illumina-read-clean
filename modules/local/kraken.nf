@@ -23,6 +23,7 @@ process KRAKEN_ONE {
         path "*kraken1.tab.gz"
         path ".command.out"
         path ".command.err"
+        path "versions.yml", emit: versions
 
     shell:
         '''
@@ -86,6 +87,7 @@ process KRAKEN_TWO {
         path "*kraken2.tab.gz"
         path ".command.out"
         path ".command.err"
+        path "versions.yml", emit: versions
 
     shell:
         '''

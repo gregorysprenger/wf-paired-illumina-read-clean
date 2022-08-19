@@ -18,6 +18,7 @@ process FILTER_CONTIGS {
         path "*.uncorrected.fna", emit: uncorrected_contigs
         path ".command.out"
         path ".command.err"
+        path "versions.yml", emit: versions
 
     shell:
         '''
