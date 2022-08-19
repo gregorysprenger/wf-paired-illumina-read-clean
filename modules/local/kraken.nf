@@ -19,8 +19,8 @@ process KRAKEN_ONE {
         val base
 
     output:
-        path "*taxonomy-reads.tab"
-        path "*kraken.tab.gz"
+        path "*taxonomy1-reads.tab"
+        path "*kraken1.tab.gz"
         path ".command.out"
         path ".command.err"
 
@@ -37,7 +37,7 @@ process KRAKEN_ONE {
         fi
         echo "KRAKEN 1 DATABASE = ${database}"
         # Investigate taxonomic identity of cleaned reads
-        if [ ! -s !{base}_taxonomy-reads.tab ]; then
+        if [ ! -s !{base}_taxonomy1-reads.tab ]; then
             msg "INFO: Running Kraken1 with !{task.cpus} threads"
             kraken --db ${database} --threads !{task.cpus} --fastq-input --gzip-compressed \
             !{R1_paired_gz} !{R2_paired_gz} !{single_gz} > !{base}_kraken.output
@@ -46,10 +46,10 @@ process KRAKEN_ONE {
             kraken-report --db ${database} !{base}_kraken.output > kraken.tab 2>&1 | tr '^M' '\n' 1>&2
 
             msg "INFO: Summarizing Kraken1"
-            summarize_kraken 'kraken.tab' > !{base}_taxonomy-reads.tab
+            summarize_kraken 'kraken.tab' > !{base}_taxonomy1-reads.tab
 
-            mv kraken.tab !{base}_kraken.tab
-            gzip !{base}_kraken.tab
+            mv kraken.tab !{base}_kraken1.tab
+            gzip !{base}_kraken1.tab
         fi
 
         # Get process version
