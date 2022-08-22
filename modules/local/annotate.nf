@@ -2,7 +2,7 @@ process ANNOTATE {
 
     publishDir "${params.outpath}/annot",
         mode: "${params.publish_dir_mode}",
-        pattern: "*"
+        pattern: "*.gbk"
     publishDir "${params.process_log_dir}",
         mode: "${params.publish_dir_mode}",
         pattern: ".command.*",

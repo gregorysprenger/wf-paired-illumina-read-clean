@@ -2,7 +2,7 @@ process SPADES {
 
     publishDir "${params.outpath}/asm",
         mode: "${params.publish_dir_mode}",
-        pattern: "*"
+        pattern: "spades/"
     publishDir "${params.process_log_dir}",
         mode: "${params.publish_dir_mode}",
         pattern: ".command.*",
