@@ -40,7 +40,7 @@ process CLEAN_READS {
         source bash_functions.sh
 
         # Correct cleaned SPAdes contigs with cleaned PE reads
-        minimum_size=$(( !{size}/200 ))
+        minimum_size=$(( !{size}/1000 ))
         verify_file_minimum_size "!{uncorrected_contigs}" 'filtered SPAdes assembly' ${minimum_size}c
 
         echo -n '' > !{base}.InDels-corrected.cnt.txt

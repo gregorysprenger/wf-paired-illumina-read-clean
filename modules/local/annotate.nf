@@ -44,7 +44,7 @@ process ANNOTATE {
         fi
         done
         
-        minimum_size=$(( !{size}/100 ))
+        minimum_size=$(( !{size}/600 ))
         verify_file_minimum_size "!{base}.${ext}" 'annotated assembly' ${minimum_size}c
 
         # Get process version
