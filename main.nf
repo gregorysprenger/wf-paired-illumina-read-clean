@@ -18,7 +18,7 @@ def helpMessage() {
     nextflow run -profile <docker|singularity> main.nf --inpath <input directory> --outpath <directory for results>
 
     Run with test data:
-    nextflow run main.nf -profile test,<docker|singularity> --outpath results
+    nextflow run main.nf -profile test,<docker|singularity>
     
     Input/output options:
       --inpath             Path to input data directory containing FastQ assemblies. Recognized extensions are:  fastq.gz, fq.gz.
@@ -76,7 +76,7 @@ File outpathFileObj = new File(params.outpath)
 if (outpathFileObj.exists()){
     // Per the config file, outpath stores log & trace files so it is created before this point
     // Check that outpath only contains a trace file created this hour
-    dayAndHour = new java.util.Date().format('yyyy-MM-dd HH')
+    dayAndHour = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
     outFiles = outpathFileObj.list()
     if (!(outFiles[0] ==~ /trace.($dayAndHour):\d\d:\d\d.txt/ && outFiles.size() == 1)) {
         // If it contains an older trace file or other files, warn the user
