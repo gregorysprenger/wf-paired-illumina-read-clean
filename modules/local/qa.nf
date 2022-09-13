@@ -40,6 +40,12 @@ process QA {
 
         mv -f quast/transposed_report.tsv Summary.Assemblies.tab
 
+        # Quast modifies basename. Need to check and modify if needed.
+        assemblies_name=$(awk '{print $1}' Summary.Assemblies.tab | awk 'NR!=1 {print}')
+        if [ ${assemblies_name} != !{base} ]; then
+            sed -i "s|${assemblies_name}|!{base}|g" Summary.Assemblies.tab
+        fi
+
         # Count nucleotides per read set
         echo -n '' > Summary.Illumina.CleanedReads-Bases.tab
         for (( i=0; i<3; i+=3 )); do
