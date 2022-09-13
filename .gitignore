@@ -2,3 +2,5 @@
 work/
 results/
 .log
+*.img
+*.gz
