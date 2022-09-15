@@ -1,11 +1,12 @@
 #!/bin/bash -l
+#$ -wd /scicomp/groups/OID/NCEZID/DHCPP/BSPB/ZSAL/workflows/wf-paired-illumina-read-clean
 
 module load nextflow
 
 nextflow \
   -log /scicomp/scratch/$USER/nextflow_log.txt \
   run \
-  -profile singularity,sge \
+  -profile singularity \
   $LAB_HOME/workflows/wf-paired-illumina-read-clean/main.nf \
   --outpath $OUT \
   --inpath $IN \

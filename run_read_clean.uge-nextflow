@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#$ -cwd
 
 # This script is to run the wf-paired-illumina-read-clean workflow on the UGE cluster
 
@@ -65,4 +66,5 @@ qsub \
     -m bae \
     -N Clean_Reads \
     -q all.q \
+    -pe smp 16-128 \
     $LAB_HOME/workflows/wf-paired-illumina-read-clean/_run_read_clean.uge-nextflow
