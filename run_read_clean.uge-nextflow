@@ -46,6 +46,9 @@ else
   OUT=$(readlink -f "$2")
 fi
 
+# Get basename
+filename=$(basename $IN/*R1* | cut -d _ -f 1 | sed 's/[-.,]//g')
+
 # Set up tmp and cache directories for Singularity
 mkdir -p $HOME/tmp && export TMPDIR=$HOME/tmp
 mkdir -p /scicomp/scratch/$USER/singularity.cache && export NXF_SINGULARITY_CACHEDIR=/scicomp/scratch/$USER/singularity.cache
@@ -64,7 +67,7 @@ qsub \
     -e $OUT/ \
     -M $USER@cdc.gov \
     -m bae \
-    -N Clean_Reads \
+    -N Clean_$filename \
     -q all.q \
     -pe smp 16-128 \
     $LAB_HOME/workflows/wf-paired-illumina-read-clean/_run_read_clean.uge-nextflow

@@ -1,9 +1,9 @@
 process EXTRACT_SINGLETONS {
 
-    publishDir "${params.outpath}/trim_reads",
+    publishDir "${params.outpath}",
         mode: "${params.publish_dir_mode}",
         pattern: "*.gz"
-    publishDir "${params.outpath}/trim_reads",
+    publishDir "${params.outpath}",
         mode: "${params.publish_dir_mode}",
         pattern: "*.tsv"
     publishDir "${params.process_log_dir}",
