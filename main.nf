@@ -136,7 +136,6 @@ workflow {
 
     // SETUP: Define input, output, and dependency channels
     input_ch = Channel.fromFilePairs(params.inpath+'/*R{1,2}*.{fastq,fq}.gz', checkIfExists: true)
-    output_ch = Channel.fromPath(params.outpath)
     phix_ch = Channel.fromPath('bin/PhiX_NC_001422.1.fasta', checkIfExists: true)
     adapters_ch = Channel.fromPath('bin/adapters_Nextera_NEB_TruSeq_NuGEN_ThruPLEX.fas', checkIfExists: true)
     ch_versions = Channel.empty()
@@ -161,7 +160,6 @@ workflow {
         adapters_ch,
         REMOVE_PHIX.out.noPhiX_R1,
         REMOVE_PHIX.out.noPhiX_R2,
-        output_ch,
         INFILE_HANDLING.out.base,
         INFILE_HANDLING.out.size
     )
