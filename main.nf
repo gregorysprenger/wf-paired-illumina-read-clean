@@ -136,8 +136,6 @@ workflow {
 
     // SETUP: Define input, output, and dependency channels
     input_ch = Channel.fromFilePairs(params.inpath+'/*R{1,2}*.{fastq,fq}.gz', checkIfExists: true)
-    phix_ch = Channel.fromPath('bin/PhiX_NC_001422.1.fasta', checkIfExists: true)
-    adapters_ch = Channel.fromPath('bin/adapters_Nextera_NEB_TruSeq_NuGEN_ThruPLEX.fas', checkIfExists: true)
     ch_versions = Channel.empty()
 
     // PROCESS: Read files from input directory, validate and stage input files
@@ -147,7 +145,6 @@ workflow {
 
     // PROCESS: Run bbduk to remove PhiX reads
     REMOVE_PHIX (
-        phix_ch,
         INFILE_HANDLING.out.input,
         INFILE_HANDLING.out.base,
         INFILE_HANDLING.out.size
@@ -157,7 +154,6 @@ workflow {
 
     // PROCESS: Run trimmomatic to clip adapters and do quality trimming
     TRIMMOMATIC (
-        adapters_ch,
         REMOVE_PHIX.out.noPhiX_R1,
         REMOVE_PHIX.out.noPhiX_R2,
         INFILE_HANDLING.out.base,
