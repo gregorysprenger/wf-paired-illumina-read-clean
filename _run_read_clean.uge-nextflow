@@ -1,5 +1,4 @@
 #!/bin/bash -l
-#$ -wd /scicomp/groups/OID/NCEZID/DHCPP/BSPB/ZSAL/workflows/wf-paired-illumina-read-clean
 
 module load nextflow
 
@@ -12,3 +11,4 @@ nextflow \
   --inpath $IN \
   -w /scicomp/scratch/$USER/work \
   -N $USER@cdc.gov
+  
