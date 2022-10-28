@@ -143,6 +143,8 @@ workflow {
         input_ch
     )
 
+    ch_versions = ch_versions.mix(INFILE_HANDLING.out.versions)
+
     // PROCESS: Run bbduk to remove PhiX reads
     REMOVE_PHIX (
         INFILE_HANDLING.out.input,
